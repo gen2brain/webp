@@ -132,7 +132,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 
 	cfg.Width = int(width)
 	cfg.Height = int(height)
-	cfg.ColorModel = color.RGBAModel
+	cfg.ColorModel = color.NRGBAModel
 
 	if configOnly {
 		return nil, cfg, nil
@@ -179,7 +179,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	}
 
 	delay := make([]int, 0)
-	images := make([]*image.RGBA, 0)
+	images := make([]*image.NRGBA, 0)
 
 	for i := 0; i < int(count); i++ {
 		out, ok := mod.Memory().Read(uint32(outPtr)+uint32(i*size), uint32(size))
@@ -187,7 +187,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 			return nil, cfg, ErrMemRead
 		}
 
-		img := image.NewRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
+		img := image.NewNRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
 		img.Pix = out
 		images = append(images, img)
 
