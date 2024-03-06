@@ -8,7 +8,7 @@ import (
 // WEBP represents the possibly multiple images stored in a WEBP file.
 type WEBP struct {
 	// Decoded images.
-	Image []image.Image
+	Image []*image.RGBA
 	// Delay times, one per frame, in milliseconds.
 	Delay []int
 }
