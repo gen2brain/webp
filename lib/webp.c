@@ -39,18 +39,18 @@ int decode(uint8_t *avif_in, int avif_in_size, int config_only, int decode_all, 
         return 1;
     }
             
-    int buf_size = *width * *height * 4;
+    int stride = *width * 4;
+    int size = stride * *height;
 
     WebPIterator iter;
     if(WebPDemuxGetFrame(demux, 1, &iter)) {
         do {
-
-            uint8_t* image = WebPDecodeRGBA(iter.fragment.bytes, iter.fragment.size, NULL, NULL);
-            memcpy(rgb_out + buf_size*(iter.frame_num-1), image, buf_size);
+            if(!WebPDecodeRGBAInto(iter.fragment.bytes, iter.fragment.size, rgb_out + size*(iter.frame_num-1), size, stride)) {
+                WebPDemuxDelete(demux);
+                return 0;
+            }
 
             memcpy(delay + sizeof(int)*(iter.frame_num-1), &iter.duration, sizeof(int));
-            
-            WebPFree(image);
 
             if(!decode_all) {
                 break;
