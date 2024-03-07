@@ -49,11 +49,13 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 		return nil, cfg, ErrDecode
 	}
 
+	size := cfg.Width * cfg.Height * 4
+
 	for {
 		img := image.NewNRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
 		decoded := webpDecodeRGBA(iter.Fragment.Bytes, iter.Fragment.Size)
 
-		copy(img.Pix, unsafe.Slice(decoded, iter.Fragment.Size))
+		copy(img.Pix, unsafe.Slice(decoded, size))
 		images = append(images, img)
 
 		delay = append(delay, int(iter.Duration))
