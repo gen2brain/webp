@@ -1,4 +1,4 @@
-package webp_test
+package webp
 
 import (
 	"bytes"
@@ -8,7 +8,6 @@ import (
 	"io"
 	"testing"
 
-	"github.com/gen2brain/webp"
 	xwebp "golang.org/x/image/webp"
 )
 
@@ -19,7 +18,7 @@ var testWebp []byte
 var testWebpAnim []byte
 
 func TestDecode(t *testing.T) {
-	img, err := webp.Decode(bytes.NewReader(testWebp))
+	img, err := Decode(bytes.NewReader(testWebp))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +30,7 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeAnim(t *testing.T) {
-	ret, err := webp.DecodeAll(bytes.NewReader(testWebpAnim))
+	ret, err := DecodeAll(bytes.NewReader(testWebpAnim))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,20 +63,8 @@ func TestImageDecode(t *testing.T) {
 	}
 }
 
-func TestImageDecodeAnim(t *testing.T) {
-	img, err := webp.Decode(bytes.NewReader(testWebpAnim))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = jpeg.Encode(io.Discard, img, nil)
-	if err != nil {
-		t.Error(err)
-	}
-}
-
 func TestDecodeConfig(t *testing.T) {
-	cfg, err := webp.DecodeConfig(bytes.NewReader(testWebp))
+	cfg, err := DecodeConfig(bytes.NewReader(testWebp))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +78,7 @@ func TestDecodeConfig(t *testing.T) {
 	}
 }
 
-func BenchmarkDecodeXWebP(b *testing.B) {
+func BenchmarkDecodeWebPStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := xwebp.Decode(bytes.NewReader(testWebp))
 		if err != nil {
@@ -102,14 +89,28 @@ func BenchmarkDecodeXWebP(b *testing.B) {
 
 func BenchmarkDecodeWebP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, err := webp.Decode(bytes.NewReader(testWebp))
+		_, _, err := decode(bytes.NewReader(testWebp), false, false)
 		if err != nil {
 			b.Error(err)
 		}
 	}
 }
 
-func BenchmarkDecodeConfigXWebP(b *testing.B) {
+func BenchmarkDecodeWebPDynamic(b *testing.B) {
+	if !dynamic {
+		b.Errorf("dynamic/shared library not installed")
+		return
+	}
+
+	for i := 0; i < b.N; i++ {
+		_, _, err := decodeDynamic(bytes.NewReader(testWebp), false, false)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkDecodeConfigWebPStd(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, err := xwebp.DecodeConfig(bytes.NewReader(testWebp))
 		if err != nil {
@@ -120,7 +121,21 @@ func BenchmarkDecodeConfigXWebP(b *testing.B) {
 
 func BenchmarkDecodeConfigWebP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, err := webp.DecodeConfig(bytes.NewReader(testWebp))
+		_, _, err := decode(bytes.NewReader(testWebp), true, false)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkDecodeConfigWebPDynamic(b *testing.B) {
+	if !dynamic {
+		b.Errorf("dynamic/shared library not installed")
+		return
+	}
+
+	for i := 0; i < b.N; i++ {
+		_, _, err := decodeDynamic(bytes.NewReader(testWebp), true, false)
 		if err != nil {
 			b.Error(err)
 		}
