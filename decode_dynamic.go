@@ -85,7 +85,7 @@ func init() {
 
 	libwebp, err = loadLibrary(libname)
 	if err == nil {
-		libwebp, err = loadLibrary(libnameDemux)
+		libwebpDemux, err = loadLibrary(libnameDemux)
 		if err == nil {
 			dynamic = true
 		}
