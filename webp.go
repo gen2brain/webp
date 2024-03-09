@@ -22,7 +22,7 @@ type WEBP struct {
 	Delay []int
 }
 
-// Decode reads a AVIF image from r and returns it as an image.Image.
+// Decode reads a WEBP image from r and returns it as an image.Image.
 func Decode(r io.Reader) (image.Image, error) {
 	var err error
 	var ret *WEBP
@@ -42,7 +42,7 @@ func Decode(r io.Reader) (image.Image, error) {
 	return ret.Image[0], nil
 }
 
-// DecodeConfig returns the color model and dimensions of a AVIF image without decoding the entire image.
+// DecodeConfig returns the color model and dimensions of a WEBP image without decoding the entire image.
 func DecodeConfig(r io.Reader) (image.Config, error) {
 	var err error
 	var cfg image.Config
@@ -62,7 +62,7 @@ func DecodeConfig(r io.Reader) (image.Config, error) {
 	return cfg, nil
 }
 
-// DecodeAll reads a WebP image from r and returns the sequential frames and timing information.
+// DecodeAll reads a WEBP image from r and returns the sequential frames and timing information.
 func DecodeAll(r io.Reader) (*WEBP, error) {
 	var err error
 	var ret *WEBP
@@ -80,6 +80,11 @@ func DecodeAll(r io.Reader) (*WEBP, error) {
 	}
 
 	return ret, nil
+}
+
+// Dynamic returns true when library is using the dynamic/shared library.
+func Dynamic() bool {
+	return dynamic
 }
 
 func init() {
