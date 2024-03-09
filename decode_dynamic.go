@@ -1,6 +1,7 @@
 package webp
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"io"
@@ -84,13 +85,23 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 
 func init() {
 	var err error
+	defer func() {
+		if r := recover(); r != nil {
+			dynamic = false
+			dynamicErr = fmt.Errorf("%v", r)
+		}
+	}()
 
 	libwebp, err = loadLibrary(libname)
 	if err == nil {
 		libwebpDemux, err = loadLibrary(libnameDemux)
 		if err == nil {
 			dynamic = true
+		} else {
+			dynamicErr = err
 		}
+	} else {
+		dynamicErr = err
 	}
 
 	if !dynamic {
@@ -111,6 +122,7 @@ var (
 	libwebp      uintptr
 	libwebpDemux uintptr
 	dynamic      bool
+	dynamicErr   error
 )
 
 var (

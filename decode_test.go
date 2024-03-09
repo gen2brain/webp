@@ -97,7 +97,7 @@ func BenchmarkDecodeWebP(b *testing.B) {
 }
 
 func BenchmarkDecodeWebPDynamic(b *testing.B) {
-	if !Dynamic() {
+	if Dynamic() != nil {
 		b.Errorf("dynamic/shared library not installed")
 		return
 	}
@@ -129,7 +129,7 @@ func BenchmarkDecodeConfigWebP(b *testing.B) {
 }
 
 func BenchmarkDecodeConfigWebPDynamic(b *testing.B) {
-	if !Dynamic() {
+	if Dynamic() != nil {
 		b.Errorf("dynamic/shared library not installed")
 		return
 	}
