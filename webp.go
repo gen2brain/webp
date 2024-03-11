@@ -112,9 +112,16 @@ func Encode(w io.Writer, m image.Image, o ...Options) error {
 		}
 	}
 
-	err := encode(w, m, quality, lossless)
-	if err != nil {
-		return err
+	if dynamic {
+		err := encodeDynamic(w, m, quality, lossless)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := encode(w, m, quality, lossless)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
