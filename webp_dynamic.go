@@ -83,6 +83,41 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	return ret, cfg, nil
 }
 
+func encodeDynamic(w io.Writer, m image.Image, quality int, lossless bool) error {
+	img := imageToNRGBA(m)
+
+	out := new(uint8)
+	pix := unsafe.SliceData(img.Pix)
+
+	var size uint64
+	if lossless {
+		size = webpEncodeLosslessRGBA(pix, img.Bounds().Dx(), img.Bounds().Dy(), img.Stride, &out)
+		if size == 0 {
+			return ErrEncode
+		}
+	} else {
+		size = webpEncodeRGBA(pix, img.Bounds().Dx(), img.Bounds().Dy(), img.Stride, float32(quality), &out)
+		if size == 0 {
+			return ErrEncode
+		}
+	}
+
+	if out == nil {
+		return ErrEncode
+	}
+
+	defer webpFree(out)
+
+	buf := unsafe.Slice(out, size)
+
+	_, err := w.Write(buf)
+	if err != nil {
+		return fmt.Errorf("write: %w", err)
+	}
+
+	return nil
+}
+
 func init() {
 	var err error
 	defer func() {
@@ -116,6 +151,8 @@ func init() {
 	purego.RegisterLibFunc(&_webpDecodeRGBA, libwebp, "WebPDecodeRGBA")
 	purego.RegisterLibFunc(&_webpGetInfo, libwebp, "WebPGetInfo")
 	purego.RegisterLibFunc(&_webpFree, libwebp, "WebPFree")
+	purego.RegisterLibFunc(&_webpEncodeRGBA, libwebp, "WebPEncodeRGBA")
+	purego.RegisterLibFunc(&_webpEncodeLosslessRGBA, libwebp, "WebPEncodeLosslessRGBA")
 }
 
 var (
@@ -134,6 +171,8 @@ var (
 	_webpDecodeRGBA           func(*uint8, uint64, *int, *int) *uint8
 	_webpGetInfo              func(*uint8, uint64, *int, *int) int
 	_webpFree                 func(*uint8)
+	_webpEncodeRGBA           func(*uint8, int, int, int, float32, **uint8) uint64
+	_webpEncodeLosslessRGBA   func(*uint8, int, int, int, **uint8) uint64
 )
 
 func webpDemux(data *webpData) *webpDemuxer {
@@ -175,6 +214,14 @@ func webpGetInfo(data []byte) (int, int, bool) {
 
 func webpFree(p *uint8) {
 	_webpFree(p)
+}
+
+func webpEncodeRGBA(data *uint8, width, height, stride int, quality float32, output **uint8) uint64 {
+	return _webpEncodeRGBA(data, width, height, stride, quality, output)
+}
+
+func webpEncodeLosslessRGBA(data *uint8, width, height, stride int, output **uint8) uint64 {
+	return _webpEncodeLosslessRGBA(data, width, height, stride, output)
 }
 
 type webpDemuxer struct{}

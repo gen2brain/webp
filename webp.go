@@ -4,6 +4,7 @@ package webp
 import (
 	"errors"
 	"image"
+	"image/draw"
 	"io"
 )
 
@@ -12,6 +13,7 @@ var (
 	ErrMemRead  = errors.New("webp: mem read failed")
 	ErrMemWrite = errors.New("webp: mem write failed")
 	ErrDecode   = errors.New("webp: decode failed")
+	ErrEncode   = errors.New("webp: encode failed")
 )
 
 // WEBP represents the possibly multiple images stored in a WEBP file.
@@ -20,6 +22,17 @@ type WEBP struct {
 	Image []*image.NRGBA
 	// Delay times, one per frame, in milliseconds.
 	Delay []int
+}
+
+// DefaultQuality is the default quality encoding parameter.
+const DefaultQuality = 75
+
+// Options are the encoding parameters.
+type Options struct {
+	// Quality in the range [0,100]. Quality of 100 implies Lossless. Default is 75.
+	Quality int
+	// Lossless indicates whether to use the lossless compression. Lossless will ignore quality.
+	Lossless bool
 }
 
 // Decode reads a WEBP image from r and returns it as an image.Image.
@@ -82,9 +95,46 @@ func DecodeAll(r io.Reader) (*WEBP, error) {
 	return ret, nil
 }
 
+// Encode writes the image m to w with the given options.
+func Encode(w io.Writer, m image.Image, o ...Options) error {
+	lossless := false
+	quality := DefaultQuality
+
+	if o != nil {
+		opt := o[0]
+		lossless = opt.Lossless
+		quality = opt.Quality
+
+		if quality <= 0 {
+			quality = DefaultQuality
+		} else if quality > 100 {
+			quality = 100
+		}
+	}
+
+	err := encode(w, m, quality, lossless)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Dynamic returns error (if there was any) during opening dynamic/shared library.
 func Dynamic() error {
 	return dynamicErr
+}
+
+func imageToNRGBA(src image.Image) *image.NRGBA {
+	if dst, ok := src.(*image.NRGBA); ok {
+		return dst
+	}
+
+	b := src.Bounds()
+	dst := image.NewNRGBA(b)
+	draw.Draw(dst, dst.Bounds(), src, b.Min, draw.Src)
+
+	return dst
 }
 
 func init() {

@@ -2,15 +2,17 @@
 #include <string.h>
 
 #include "webp/decode.h"
+#include "webp/encode.h"
 #include "webp/demux.h"
 
-void *allocate(size_t size);
+void* allocate(size_t size);
 void deallocate(void *ptr);
 
-int decode(uint8_t *avif_in, int avif_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out);
+int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out);
+uint8_t* encode(uint8_t *rgb_in, int width, int height, int stride, size_t *size, int quality, int lossless);
 
 __attribute__((export_name("allocate")))
-void *allocate(size_t size) {
+void* allocate(size_t size) {
     return malloc(size);
 }
 
@@ -20,14 +22,14 @@ void deallocate(void *ptr) {
 }
 
 __attribute__((export_name("decode")))
-int decode(uint8_t *avif_in, int avif_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out) {
-    if(!WebPGetInfo(avif_in, avif_in_size, NULL, NULL)) {
+int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out) {
+    if(!WebPGetInfo(webp_in, webp_in_size, NULL, NULL)) {
         return 0;
     }
 
     WebPData data;
-    data.bytes = avif_in;
-    data.size = avif_in_size;
+    data.bytes = webp_in;
+    data.size = webp_in_size;
 
     WebPDemuxer* demux = WebPDemux(&data);
     *width = WebPDemuxGetI(demux, WEBP_FF_CANVAS_WIDTH);
@@ -64,4 +66,20 @@ int decode(uint8_t *avif_in, int avif_in_size, int config_only, int decode_all, 
 
     WebPDemuxDelete(demux);
     return 1;
+}
+
+__attribute__((export_name("encode")))
+uint8_t* encode(uint8_t *rgb_in, int width, int height, int stride, size_t *size, int quality, int lossless) {
+    size_t ret;
+    uint8_t *out;
+
+    if(lossless) {
+        ret = WebPEncodeLosslessRGBA(rgb_in, width, height, stride, &out);
+    } else {
+        ret = WebPEncodeRGBA(rgb_in, width, height, stride, (float)quality, &out);
+    }
+
+    *size = ret;
+
+    return out;
 }

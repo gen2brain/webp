@@ -7,8 +7,6 @@ import (
 	"image/jpeg"
 	"io"
 	"testing"
-
-	xwebp "golang.org/x/image/webp"
 )
 
 //go:embed testdata/test.webp
@@ -78,12 +76,15 @@ func TestDecodeConfig(t *testing.T) {
 	}
 }
 
-func BenchmarkDecodeWebPStd(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_, err := xwebp.Decode(bytes.NewReader(testWebp))
-		if err != nil {
-			b.Error(err)
-		}
+func TestEncode(t *testing.T) {
+	img, err := Decode(bytes.NewReader(testWebp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = Encode(io.Discard, img)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -110,15 +111,6 @@ func BenchmarkDecodeWebPDynamic(b *testing.B) {
 	}
 }
 
-func BenchmarkDecodeConfigWebPStd(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_, err := xwebp.DecodeConfig(bytes.NewReader(testWebp))
-		if err != nil {
-			b.Error(err)
-		}
-	}
-}
-
 func BenchmarkDecodeConfigWebP(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, _, err := decode(bytes.NewReader(testWebp), true, false)
@@ -136,6 +128,44 @@ func BenchmarkDecodeConfigWebPDynamic(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		_, _, err := decodeDynamic(bytes.NewReader(testWebp), true, false)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkEncodeWebP(b *testing.B) {
+	if Dynamic() != nil {
+		b.Errorf("dynamic/shared library not installed")
+		return
+	}
+
+	img, err := Decode(bytes.NewReader(testWebp))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		err := encode(io.Discard, img, 75, false)
+		if err != nil {
+			b.Error(err)
+		}
+	}
+}
+
+func BenchmarkEncodeWebPDynamic(b *testing.B) {
+	if Dynamic() != nil {
+		b.Errorf("dynamic/shared library not installed")
+		return
+	}
+
+	img, err := Decode(bytes.NewReader(testWebp))
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	for i := 0; i < b.N; i++ {
+		err := encodeDynamic(io.Discard, img, 75, false)
 		if err != nil {
 			b.Error(err)
 		}

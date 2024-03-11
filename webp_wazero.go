@@ -17,7 +17,7 @@ import (
 )
 
 //go:embed lib/webp.wasm
-var avifWasm []byte
+var webpWasm []byte
 
 func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
 	if !initialized.Load() {
@@ -25,14 +25,14 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	}
 
 	var cfg image.Config
-	var avif bytes.Buffer
+	var buffer bytes.Buffer
 
-	_, err := avif.ReadFrom(r)
+	_, err := buffer.ReadFrom(r)
 	if err != nil {
 		return nil, cfg, fmt.Errorf("read: %w", err)
 	}
 
-	inSize := avif.Len()
+	inSize := buffer.Len()
 	ctx := context.Background()
 
 	res, err := _alloc.Call(ctx, uint64(inSize))
@@ -42,7 +42,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	inPtr := res[0]
 	defer _free.Call(ctx, inPtr)
 
-	ok := mod.Memory().Write(uint32(inPtr), avif.Bytes())
+	ok := mod.Memory().Write(uint32(inPtr), buffer.Bytes())
 	if !ok {
 		return nil, cfg, ErrMemWrite
 	}
@@ -173,12 +173,74 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	return ret, cfg, nil
 }
 
+func encode(w io.Writer, m image.Image, quality int, lossless bool) error {
+	if !initialized.Load() {
+		initialize()
+	}
+
+	img := imageToNRGBA(m)
+	ctx := context.Background()
+
+	res, err := _alloc.Call(ctx, uint64(len(img.Pix)))
+	if err != nil {
+		return fmt.Errorf("alloc: %w", err)
+	}
+	inPtr := res[0]
+	defer _free.Call(ctx, inPtr)
+
+	ok := mod.Memory().Write(uint32(inPtr), img.Pix)
+	if !ok {
+		return ErrMemWrite
+	}
+
+	res, err = _alloc.Call(ctx, 8)
+	if err != nil {
+		return fmt.Errorf("alloc: %w", err)
+	}
+	sizePtr := res[0]
+	defer _free.Call(ctx, sizePtr)
+
+	useLossless := 0
+	if lossless {
+		useLossless = 1
+	}
+
+	res, err = _encode.Call(ctx, inPtr, uint64(img.Bounds().Dx()), uint64(img.Bounds().Dy()), uint64(img.Stride), sizePtr, uint64(quality), uint64(useLossless))
+	if err != nil {
+		return fmt.Errorf("encode: %w", err)
+	}
+
+	size, ok := mod.Memory().ReadUint64Le(uint32(sizePtr))
+	if !ok {
+		return ErrMemRead
+	}
+
+	if size == 0 {
+		return ErrEncode
+	}
+
+	defer _free.Call(ctx, res[0])
+
+	out, ok := mod.Memory().Read(uint32(res[0]), uint32(size))
+	if !ok {
+		return ErrMemRead
+	}
+
+	_, err = w.Write(out)
+	if err != nil {
+		return fmt.Errorf("write: %w", err)
+	}
+
+	return nil
+}
+
 var (
 	mod api.Module
 
 	_alloc  api.Function
 	_free   api.Function
 	_decode api.Function
+	_encode api.Function
 
 	initialized atomic.Bool
 )
@@ -191,7 +253,7 @@ func initialize() {
 	ctx := context.Background()
 	rt := wazero.NewRuntime(ctx)
 
-	compiled, err := rt.CompileModule(ctx, avifWasm)
+	compiled, err := rt.CompileModule(ctx, webpWasm)
 	if err != nil {
 		panic(err)
 	}
@@ -206,6 +268,7 @@ func initialize() {
 	_alloc = mod.ExportedFunction("allocate")
 	_free = mod.ExportedFunction("deallocate")
 	_decode = mod.ExportedFunction("decode")
+	_encode = mod.ExportedFunction("encode")
 
 	initialized.Store(true)
 }

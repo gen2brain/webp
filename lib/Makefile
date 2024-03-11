@@ -26,6 +26,12 @@ $(LIBWEBP_BUILD)/libwebp.a: $(LIBWEBP_SRC)
 		-DWEBP_ENABLE_SIMD_DEFAULT=0 \
 		-DWEBP_BUILD_EXTRAS=0 \
 		-DWEBP_USE_THREAD=0 \
+		-DWEBP_BUILD_ANIM_UTILS=0 \
+		-DWEBP_BUILD_CWEBP=0 \
+		-DWEBP_BUILD_DWEBP=0 \
+		-DWEBP_BUILD_IMG2WEBP=0 \
+		-DWEBP_BUILD_WEBPINFO=0 \
+		-DWEBP_BUILD_WEBPMUX=0 \
 		-DCMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE)
 
 	cd $(LIBWEBP_BUILD); \
@@ -42,8 +48,9 @@ $(BIN): $(LIBWEBP_BUILD)/libwebp.a
 		-o $@ \
 		-Wall \
 		webp.c \
-		${LIBWEBP_BUILD}/libwebpdecoder.a \
-		${LIBWEBP_BUILD}/libwebpdemux.a
+		${LIBWEBP_BUILD}/libwebpdemux.a \
+		${LIBWEBP_BUILD}/libwebp.a \
+		${LIBWEBP_BUILD}/libsharpyuv.a
 
 .PHONY: clean
 
