@@ -135,11 +135,6 @@ func BenchmarkDecodeConfigWebPDynamic(b *testing.B) {
 }
 
 func BenchmarkEncodeWebP(b *testing.B) {
-	if Dynamic() != nil {
-		b.Errorf("dynamic/shared library not installed")
-		return
-	}
-
 	img, err := Decode(bytes.NewReader(testWebp))
 	if err != nil {
 		b.Fatal(err)

@@ -2,6 +2,7 @@ package webp
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	_ "embed"
 	"fmt"
@@ -16,7 +17,7 @@ import (
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
 )
 
-//go:embed lib/webp.wasm
+//go:embed lib/webp.wasm.gz
 var webpWasm []byte
 
 func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
@@ -253,7 +254,18 @@ func initialize() {
 	ctx := context.Background()
 	rt := wazero.NewRuntime(ctx)
 
-	compiled, err := rt.CompileModule(ctx, webpWasm)
+	r, err := gzip.NewReader(bytes.NewReader(webpWasm))
+	if err != nil {
+		panic(err)
+	}
+
+	var data bytes.Buffer
+	_, err = data.ReadFrom(r)
+	if err != nil {
+		panic(err)
+	}
+
+	compiled, err := rt.CompileModule(ctx, data.Bytes())
 	if err != nil {
 		panic(err)
 	}
