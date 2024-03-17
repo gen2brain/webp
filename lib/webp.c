@@ -23,8 +23,13 @@ void deallocate(void *ptr) {
 
 __attribute__((export_name("decode")))
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out) {
-    if(!WebPGetInfo(webp_in, webp_in_size, NULL, NULL)) {
+    if(!WebPGetInfo(webp_in, webp_in_size, (int *)width, (int *)height)) {
         return 0;
+    }
+
+    if(config_only && !decode_all) {
+        *count = 1;
+        return 1;
     }
 
     WebPData data;
@@ -32,8 +37,6 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
     data.size = webp_in_size;
 
     WebPDemuxer* demux = WebPDemux(&data);
-    *width = WebPDemuxGetI(demux, WEBP_FF_CANVAS_WIDTH);
-    *height = WebPDemuxGetI(demux, WEBP_FF_CANVAS_HEIGHT);
     *count = WebPDemuxGetI(demux, WEBP_FF_FRAME_COUNT);
 
     if(config_only) {

@@ -3,9 +3,8 @@ LIBWEBP_VERSION = v1.3.2
 LIBWEBP_SRC = $(PWD)/libwebp
 LIBWEBP_BUILD = $(LIBWEBP_SRC)/build
 
-WASI_SDK_PATH = /opt/wasi-sdk
+WASI_SDK_PATH ?= /opt/wasi-sdk
 export CC = $(WASI_SDK_PATH)/bin/clang --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
-export CXX = $(WASI_SDK_PATH)/bin/clang++ --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
 
 CMAKE_TOOLCHAIN_FILE=$(WASI_SDK_PATH)/share/cmake/wasi-sdk.cmake
 

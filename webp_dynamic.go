@@ -14,9 +14,20 @@ import (
 func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
 	var cfg image.Config
 
-	data, err := io.ReadAll(r)
-	if err != nil {
-		return nil, cfg, err
+	var err error
+	var data []byte
+
+	if configOnly {
+		data = make([]byte, 32)
+		_, err = r.Read(data)
+		if err != nil {
+			return nil, cfg, err
+		}
+	} else {
+		data, err = io.ReadAll(r)
+		if err != nil {
+			return nil, cfg, err
+		}
 	}
 
 	width, height, ok := webpGetInfo(data)
@@ -108,9 +119,7 @@ func encodeDynamic(w io.Writer, m image.Image, quality int, lossless bool) error
 
 	defer webpFree(out)
 
-	buf := unsafe.Slice(out, size)
-
-	_, err := w.Write(buf)
+	_, err := w.Write(unsafe.Slice(out, size))
 	if err != nil {
 		return fmt.Errorf("write: %w", err)
 	}
@@ -176,7 +185,7 @@ var (
 )
 
 func webpDemux(data *webpData) *webpDemuxer {
-	return _webpDemux(data, 0, nil, 0x0107)
+	return _webpDemux(data, 0, nil, 0x0107) // WEBP_DEMUX_ABI_VERSION
 }
 
 func webpDemuxDelete(demuxer *webpDemuxer) {

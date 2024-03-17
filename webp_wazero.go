@@ -25,15 +25,24 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 		initialize()
 	}
 
+	var err error
 	var cfg image.Config
-	var buffer bytes.Buffer
+	var data []byte
 
-	_, err := buffer.ReadFrom(r)
-	if err != nil {
-		return nil, cfg, fmt.Errorf("read: %w", err)
+	if configOnly {
+		data = make([]byte, 32)
+		_, err = r.Read(data)
+		if err != nil {
+			return nil, cfg, fmt.Errorf("read: %w", err)
+		}
+	} else {
+		data, err = io.ReadAll(r)
+		if err != nil {
+			return nil, cfg, fmt.Errorf("read: %w", err)
+		}
 	}
 
-	inSize := buffer.Len()
+	inSize := len(data)
 	ctx := context.Background()
 
 	res, err := _alloc.Call(ctx, uint64(inSize))
@@ -43,7 +52,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	inPtr := res[0]
 	defer _free.Call(ctx, inPtr)
 
-	ok := mod.Memory().Write(uint32(inPtr), buffer.Bytes())
+	ok := mod.Memory().Write(uint32(inPtr), data)
 	if !ok {
 		return nil, cfg, ErrMemWrite
 	}
@@ -69,7 +78,12 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	countPtr := res[0]
 	defer _free.Call(ctx, countPtr)
 
-	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 1, 0, widthPtr, heightPtr, countPtr, 0, 0)
+	all := 0
+	if decodeAll {
+		all = 1
+	}
+
+	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 1, uint64(all), widthPtr, heightPtr, countPtr, 0, 0)
 	if err != nil {
 		return nil, cfg, fmt.Errorf("decode: %w", err)
 	}
@@ -126,11 +140,6 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	}
 	delayPtr := res[0]
 	defer _free.Call(ctx, delayPtr)
-
-	all := 0
-	if decodeAll {
-		all = 1
-	}
 
 	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 0, uint64(all), widthPtr, heightPtr, countPtr, delayPtr, outPtr)
 	if err != nil {
