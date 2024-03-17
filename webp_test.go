@@ -27,6 +27,34 @@ func TestDecode(t *testing.T) {
 	}
 }
 
+func TestDecodeWASM(t *testing.T) {
+	img, _, err := decode(bytes.NewReader(testWebp), false, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(io.Discard, img.Image[0], nil)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestDecodeDynamic(t *testing.T) {
+	if Dynamic() != nil {
+		t.Skip()
+	}
+
+	img, _, err := decodeDynamic(bytes.NewReader(testWebp), false, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(io.Discard, img.Image[0], nil)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func TestDecodeAnim(t *testing.T) {
 	ret, err := DecodeAll(bytes.NewReader(testWebpAnim))
 	if err != nil {
@@ -88,7 +116,7 @@ func TestEncode(t *testing.T) {
 	}
 }
 
-func BenchmarkDecodeWebP(b *testing.B) {
+func BenchmarkDecodeWasm(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, _, err := decode(bytes.NewReader(testWebp), false, false)
 		if err != nil {
@@ -97,10 +125,9 @@ func BenchmarkDecodeWebP(b *testing.B) {
 	}
 }
 
-func BenchmarkDecodeWebPDynamic(b *testing.B) {
+func BenchmarkDecodeDynamic(b *testing.B) {
 	if Dynamic() != nil {
-		b.Errorf("dynamic/shared library not installed")
-		return
+		b.Skip()
 	}
 
 	for i := 0; i < b.N; i++ {
@@ -111,7 +138,7 @@ func BenchmarkDecodeWebPDynamic(b *testing.B) {
 	}
 }
 
-func BenchmarkDecodeConfigWebP(b *testing.B) {
+func BenchmarkDecodeConfigWasm(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, _, err := decode(bytes.NewReader(testWebp), true, false)
 		if err != nil {
@@ -120,10 +147,9 @@ func BenchmarkDecodeConfigWebP(b *testing.B) {
 	}
 }
 
-func BenchmarkDecodeConfigWebPDynamic(b *testing.B) {
+func BenchmarkDecodeConfigDynamic(b *testing.B) {
 	if Dynamic() != nil {
-		b.Errorf("dynamic/shared library not installed")
-		return
+		b.Skip()
 	}
 
 	for i := 0; i < b.N; i++ {
@@ -134,7 +160,7 @@ func BenchmarkDecodeConfigWebPDynamic(b *testing.B) {
 	}
 }
 
-func BenchmarkEncodeWebP(b *testing.B) {
+func BenchmarkEncodeWasm(b *testing.B) {
 	img, err := Decode(bytes.NewReader(testWebp))
 	if err != nil {
 		b.Fatal(err)
@@ -148,10 +174,9 @@ func BenchmarkEncodeWebP(b *testing.B) {
 	}
 }
 
-func BenchmarkEncodeWebPDynamic(b *testing.B) {
+func BenchmarkEncodeDynamic(b *testing.B) {
 	if Dynamic() != nil {
-		b.Errorf("dynamic/shared library not installed")
-		return
+		b.Skip()
 	}
 
 	img, err := Decode(bytes.NewReader(testWebp))
