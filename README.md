@@ -17,8 +17,8 @@ pkg: github.com/gen2brain/webp
 cpu: 11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz
 
 BenchmarkDecodeStd-8                             157	   7639585 ns/op	  473683 B/op	      13 allocs/op
-BenchmarkDecodeWasm-8                            129	   9359457 ns/op	 1334194 B/op	      50 allocs/op
-BenchmarkDecodeDynamic-8                         313	   3751982 ns/op	 1335973 B/op	      53 allocs/op
+BenchmarkDecodeWasm-8                            169	   7038634 ns/op	  285712 B/op	      49 allocs/op
+BenchmarkDecodeDynamic-8                         344	   3497863 ns/op	  943356 B/op	      58 allocs/op
 BenchmarkDecodeTranspiled-8 (1)                  138	   8562133 ns/op	 1335622 B/op	      52 allocs/op
 BenchmarkDecodeCGo1-8 (2)                        300	   3897300 ns/op	 1333630 B/op	      21 allocs/op
 BenchmarkDecodeCGo2-8 (3)                        314	   3801195 ns/op	 1334020 B/op	      22 allocs/op
