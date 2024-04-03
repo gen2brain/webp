@@ -8,21 +8,11 @@
 void* allocate(size_t size);
 void deallocate(void *ptr);
 
-int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out);
+int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out);
 uint8_t* encode(uint8_t *rgb_in, int width, int height, int stride, size_t *size, int quality, int lossless);
 
-__attribute__((export_name("allocate")))
-void* allocate(size_t size) {
-    return malloc(size);
-}
+int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out) {
 
-__attribute__((export_name("deallocate")))
-void deallocate(void *ptr) {
-    free(ptr);
-}
-
-__attribute__((export_name("decode")))
-int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *rgb_out) {
     if(!WebPGetInfo(webp_in, webp_in_size, (int *)width, (int *)height)) {
         return 0;
     }
@@ -43,24 +33,60 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
         WebPDemuxDelete(demux);
         return 1;
     }
-            
-    int stride = *width * 4;
-    int size = stride * *height;
+
+    WebPDecoderConfig config;
+    if(!WebPInitDecoderConfig(&config)) {
+        WebPDemuxDelete(demux);
+        return 0;
+    }
+
+    int w = *width;
+    int h = *height;
+    int cw = (w+1)/2;
+    int ch = (h+1)/2;
+
+    int i0 = 1*w*h + 0*cw*ch;
+    int i1 = 1*w*h + 1*cw*ch;
+    int i2 = 1*w*h + 2*cw*ch;
+    int i3 = 2*w*h + 2*cw*ch;
+
+    config.output.colorspace = MODE_YUVA;
+    config.output.is_external_memory = 1;
+
+    config.output.u.YUVA.y = &out[0];
+    config.output.u.YUVA.y_size = i0;
+    config.output.u.YUVA.y_stride = w;
+
+    config.output.u.YUVA.u = &out[i0];
+    config.output.u.YUVA.u_size = i1;
+    config.output.u.YUVA.u_stride = cw;
+
+    config.output.u.YUVA.v = &out[i1];
+    config.output.u.YUVA.v_size = i2;
+    config.output.u.YUVA.v_stride = cw;
+
+    config.output.u.YUVA.a = &out[i2];
+    config.output.u.YUVA.a_size = i3;
+    config.output.u.YUVA.a_stride = w;
 
     WebPIterator iter;
     if(WebPDemuxGetFrame(demux, 1, &iter)) {
         do {
-            if(!WebPDecodeRGBAInto(iter.fragment.bytes, iter.fragment.size, rgb_out + size*(iter.frame_num-1), size, stride)) {
+            if(WebPDecode(iter.fragment.bytes, iter.fragment.size, &config) != VP8_STATUS_OK) {
+                WebPFreeDecBuffer(&config.output);
                 WebPDemuxDelete(demux);
                 return 0;
             }
 
             memcpy(delay + sizeof(int)*(iter.frame_num-1), &iter.duration, sizeof(int));
 
+            WebPFreeDecBuffer(&config.output);
+
             if(!decode_all) {
                 break;
             }
         } while(WebPDemuxNextFrame(&iter));
+
         WebPDemuxReleaseIterator(&iter);
     } else {
         WebPDemuxDelete(demux);
@@ -71,7 +97,6 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
     return 1;
 }
 
-__attribute__((export_name("encode")))
 uint8_t* encode(uint8_t *rgb_in, int width, int height, int stride, size_t *size, int quality, int lossless) {
     size_t ret;
     uint8_t *out;

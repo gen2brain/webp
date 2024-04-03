@@ -3,6 +3,7 @@ package webp
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"image"
 	"image/jpeg"
 	"io"
@@ -40,7 +41,8 @@ func TestDecodeWASM(t *testing.T) {
 }
 
 func TestDecodeDynamic(t *testing.T) {
-	if Dynamic() != nil {
+	if err := Dynamic(); err != nil {
+		fmt.Println(err)
 		t.Skip()
 	}
 
@@ -126,7 +128,8 @@ func BenchmarkDecodeWasm(b *testing.B) {
 }
 
 func BenchmarkDecodeDynamic(b *testing.B) {
-	if Dynamic() != nil {
+	if err := Dynamic(); err != nil {
+		fmt.Println(err)
 		b.Skip()
 	}
 
@@ -148,7 +151,8 @@ func BenchmarkDecodeConfigWasm(b *testing.B) {
 }
 
 func BenchmarkDecodeConfigDynamic(b *testing.B) {
-	if Dynamic() != nil {
+	if err := Dynamic(); err != nil {
+		fmt.Println(err)
 		b.Skip()
 	}
 
@@ -175,7 +179,8 @@ func BenchmarkEncodeWasm(b *testing.B) {
 }
 
 func BenchmarkEncodeDynamic(b *testing.B) {
-	if Dynamic() != nil {
+	if err := Dynamic(); err != nil {
+		fmt.Println(err)
 		b.Skip()
 	}
 

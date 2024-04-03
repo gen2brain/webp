@@ -18,7 +18,7 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	var data []byte
 
 	if configOnly {
-		data = make([]byte, 32)
+		data = make([]byte, maxWebpHeaderSize)
 		_, err = r.Read(data)
 		if err != nil {
 			return nil, cfg, err
@@ -37,7 +37,7 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 
 	cfg.Width = width
 	cfg.Height = height
-	cfg.ColorModel = color.NRGBAModel
+	cfg.ColorModel = color.NYCbCrAModel
 
 	if configOnly {
 		return nil, cfg, nil
@@ -51,28 +51,43 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	defer webpDemuxDelete(demuxer)
 
 	delay := make([]int, 0)
-	images := make([]*image.NRGBA, 0)
+	images := make([]*image.NYCbCrA, 0)
 
 	var iter webpIterator
 	defer webpDemuxReleaseIterator(&iter)
 
-	ok = webpDemuxGetFrame(demuxer, 1, &iter)
-	if !ok {
+	var config webpDecoderConfig
+	if !webpInitDecoderConfig(&config) {
 		return nil, cfg, ErrDecode
 	}
 
-	size := cfg.Width * cfg.Height * 4
+	config.Output.Colorspace = modeYUVA
+	config.Options.UseThreads = 1
+
+	if !webpDemuxGetFrame(demuxer, 1, &iter) {
+		return nil, cfg, ErrDecode
+	}
+
+	rect := image.Rect(0, 0, cfg.Width, cfg.Height)
 
 	for {
-		img := image.NewNRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
-		decoded := webpDecodeRGBA(iter.Fragment.Bytes, iter.Fragment.Size)
+		ok = webpDecode(iter.Fragment.Bytes, iter.Fragment.Size, &config)
+		if !ok {
+			break
+		}
 
-		copy(img.Pix, unsafe.Slice(decoded, size))
+		img := image.NewNYCbCrA(rect, image.YCbCrSubsampleRatio420)
+		out := *(*webpYUVABuffer)(unsafe.Pointer(&config.Output.U))
+
+		copy(img.Y, unsafe.Slice(out.Y, out.YSize))
+		copy(img.Cb, unsafe.Slice(out.U, out.USize))
+		copy(img.Cr, unsafe.Slice(out.V, out.VSize))
+		copy(img.A, unsafe.Slice(out.A, out.ASize))
+
 		images = append(images, img)
-
 		delay = append(delay, int(iter.Duration))
 
-		webpFree(decoded)
+		webpFreeDecBuffer(&config.Output)
 
 		if !decodeAll {
 			break
@@ -157,9 +172,11 @@ func init() {
 	purego.RegisterLibFunc(&_webpDemuxReleaseIterator, libwebpDemux, "WebPDemuxReleaseIterator")
 	purego.RegisterLibFunc(&_webpDemuxNextFrame, libwebpDemux, "WebPDemuxNextFrame")
 	purego.RegisterLibFunc(&_webpDemuxGetFrame, libwebpDemux, "WebPDemuxGetFrame")
-	purego.RegisterLibFunc(&_webpDecodeRGBA, libwebp, "WebPDecodeRGBA")
+	purego.RegisterLibFunc(&_webpDecode, libwebp, "WebPDecode")
 	purego.RegisterLibFunc(&_webpGetInfo, libwebp, "WebPGetInfo")
+	purego.RegisterLibFunc(&_webpInitDecoderConfig, libwebp, "WebPInitDecoderConfigInternal")
 	purego.RegisterLibFunc(&_webpFree, libwebp, "WebPFree")
+	purego.RegisterLibFunc(&_webpFreeDecBuffer, libwebp, "WebPFreeDecBuffer")
 	purego.RegisterLibFunc(&_webpEncodeRGBA, libwebp, "WebPEncodeRGBA")
 	purego.RegisterLibFunc(&_webpEncodeLosslessRGBA, libwebp, "WebPEncodeLosslessRGBA")
 }
@@ -177,9 +194,11 @@ var (
 	_webpDemuxReleaseIterator func(*webpIterator)
 	_webpDemuxNextFrame       func(*webpIterator) int
 	_webpDemuxGetFrame        func(*webpDemuxer, int, *webpIterator) int
-	_webpDecodeRGBA           func(*uint8, uint64, *int, *int) *uint8
+	_webpDecode               func(*uint8, uint64, *webpDecoderConfig) int
 	_webpGetInfo              func(*uint8, uint64, *int, *int) int
+	_webpInitDecoderConfig    func(*webpDecoderConfig) int
 	_webpFree                 func(*uint8)
+	_webpFreeDecBuffer        func(*webpDecBuffer)
 	_webpEncodeRGBA           func(*uint8, int, int, int, float32, **uint8) uint64
 	_webpEncodeLosslessRGBA   func(*uint8, int, int, int, **uint8) uint64
 )
@@ -208,8 +227,10 @@ func webpDemuxGetFrame(demuxer *webpDemuxer, frameNumber int, iterator *webpIter
 	return ret != 0
 }
 
-func webpDecodeRGBA(data *uint8, size uint64) *uint8 {
-	return _webpDecodeRGBA(data, size, nil, nil)
+func webpDecode(data *uint8, size uint64, config *webpDecoderConfig) bool {
+	ret := _webpDecode(data, size, config)
+
+	return ret == 0
 }
 
 func webpGetInfo(data []byte) (int, int, bool) {
@@ -221,8 +242,18 @@ func webpGetInfo(data []byte) (int, int, bool) {
 	return width, height, b
 }
 
+func webpInitDecoderConfig(config *webpDecoderConfig) bool {
+	ret := _webpInitDecoderConfig(config)
+
+	return ret == 0
+}
+
 func webpFree(p *uint8) {
 	_webpFree(p)
+}
+
+func webpFreeDecBuffer(p *webpDecBuffer) {
+	_webpFreeDecBuffer(p)
 }
 
 func webpEncodeRGBA(data *uint8, width, height, stride int, quality float32, output **uint8) uint64 {
@@ -232,6 +263,8 @@ func webpEncodeRGBA(data *uint8, width, height, stride int, quality float32, out
 func webpEncodeLosslessRGBA(data *uint8, width, height, stride int, output **uint8) uint64 {
 	return _webpEncodeLosslessRGBA(data, width, height, stride, output)
 }
+
+const modeYUVA = 12
 
 type webpDemuxer struct{}
 
@@ -255,4 +288,63 @@ type webpIterator struct {
 	BlendMethod   uint32
 	_             [2]uint32
 	_             *byte
+}
+
+type webpDecoderOptions struct {
+	BypassFiltering        int32
+	NoFancyUpsampling      int32
+	UseCropping            int32
+	CropLeft               int32
+	CropTop                int32
+	CropWidth              int32
+	CropHeight             int32
+	UseScaling             int32
+	ScaledWidth            int32
+	ScaledHeight           int32
+	UseThreads             int32
+	DitheringStrength      int32
+	Flip                   int32
+	AlphaDitheringStrength int32
+	_                      [5]uint32
+}
+
+type webpDecoderConfig struct {
+	Input   webpBitstreamFeatures
+	Output  webpDecBuffer
+	Options webpDecoderOptions
+	_       [4]byte
+}
+
+type webpDecBuffer struct {
+	Colorspace       uint32
+	Width            int32
+	Height           int32
+	IsExternalMemory int32
+	U                [80]byte
+	_                [4]uint32
+	PrivateMemory    *uint8
+}
+
+type webpBitstreamFeatures struct {
+	Width     int32
+	Height    int32
+	Alpha     int32
+	Animation int32
+	Format    int32
+	_         [5]uint32
+}
+
+type webpYUVABuffer struct {
+	Y       *uint8
+	U       *uint8
+	V       *uint8
+	A       *uint8
+	YStride int32
+	UStride int32
+	VStride int32
+	AStride int32
+	YSize   uint64
+	USize   uint64
+	VSize   uint64
+	ASize   uint64
 }

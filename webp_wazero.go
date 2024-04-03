@@ -30,7 +30,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	var data []byte
 
 	if configOnly {
-		data = make([]byte, 32)
+		data = make([]byte, maxWebpHeaderSize)
 		_, err = r.Read(data)
 		if err != nil {
 			return nil, cfg, fmt.Errorf("read: %w", err)
@@ -109,13 +109,23 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 
 	cfg.Width = int(width)
 	cfg.Height = int(height)
-	cfg.ColorModel = color.NRGBAModel
+	cfg.ColorModel = color.NYCbCrAModel
 
 	if configOnly {
 		return nil, cfg, nil
 	}
 
-	size := cfg.Width * cfg.Height * 4
+	rect := image.Rect(0, 0, cfg.Width, cfg.Height)
+	w, h := rect.Dx(), rect.Dy()
+	cw := (rect.Max.X+1)/2 - rect.Min.X/2
+	ch := (rect.Max.Y+1)/2 - rect.Min.Y/2
+
+	i0 := 1*w*h + 0*cw*ch
+	i1 := 1*w*h + 1*cw*ch
+	i2 := 1*w*h + 2*cw*ch
+	i3 := 2*w*h + 2*cw*ch
+
+	size := i3
 
 	outSize := size
 	if decodeAll {
@@ -151,7 +161,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	}
 
 	delay := make([]int, 0)
-	images := make([]*image.NRGBA, 0)
+	images := make([]*image.NYCbCrA, 0)
 
 	for i := 0; i < int(count); i++ {
 		out, ok := mod.Memory().Read(uint32(outPtr)+uint32(i*size), uint32(size))
@@ -159,8 +169,20 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 			return nil, cfg, ErrMemRead
 		}
 
-		img := image.NewNRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
-		img.Pix = out
+		img := &image.NYCbCrA{
+			YCbCr: image.YCbCr{
+				Y:              out[:i0:i0],
+				Cb:             out[i0:i1:i1],
+				Cr:             out[i1:i2:i2],
+				SubsampleRatio: image.YCbCrSubsampleRatio420,
+				YStride:        w,
+				CStride:        cw,
+				Rect:           rect,
+			},
+			A:       out[i2:],
+			AStride: w,
+		}
+
 		images = append(images, img)
 
 		d, ok := mod.Memory().ReadUint32Le(uint32(delayPtr) + uint32(i*4))
@@ -267,6 +289,7 @@ func initialize() {
 	if err != nil {
 		panic(err)
 	}
+	defer r.Close()
 
 	var data bytes.Buffer
 	_, err = data.ReadFrom(r)
@@ -286,8 +309,8 @@ func initialize() {
 		panic(err)
 	}
 
-	_alloc = mod.ExportedFunction("allocate")
-	_free = mod.ExportedFunction("deallocate")
+	_alloc = mod.ExportedFunction("malloc")
+	_free = mod.ExportedFunction("free")
 	_decode = mod.ExportedFunction("decode")
 	_encode = mod.ExportedFunction("encode")
 

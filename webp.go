@@ -16,10 +16,14 @@ var (
 	ErrEncode   = errors.New("webp: encode failed")
 )
 
+const (
+	maxWebpHeaderSize = 32
+)
+
 // WEBP represents the possibly multiple images stored in a WEBP file.
 type WEBP struct {
 	// Decoded images.
-	Image []*image.NRGBA
+	Image []*image.NYCbCrA
 	// Delay times, one per frame, in milliseconds.
 	Delay []int
 }
