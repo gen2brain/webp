@@ -1,3 +1,5 @@
+//go:build unix || darwin || windows
+
 package webp
 
 import (
