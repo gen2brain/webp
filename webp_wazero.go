@@ -206,7 +206,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	return ret, cfg, nil
 }
 
-func encode(w io.Writer, m image.Image, quality int, lossless bool) error {
+func encode(w io.Writer, m image.Image, quality, method int, lossless, exact bool) error {
 	if !initialized.Load() {
 		initialize()
 	}
@@ -265,12 +265,18 @@ func encode(w io.Writer, m image.Image, quality int, lossless bool) error {
 	sizePtr := res[0]
 	defer _free.Call(ctx, sizePtr)
 
-	useLossless := 0
+	losslessVal := 0
 	if lossless {
-		useLossless = 1
+		losslessVal = 1
 	}
 
-	res, err = _encode.Call(ctx, inPtr, uint64(width), uint64(height), sizePtr, uint64(colorspace), uint64(quality), uint64(useLossless))
+	exactVal := 0
+	if exact {
+		exactVal = 1
+	}
+
+	res, err = _encode.Call(ctx, inPtr, uint64(width), uint64(height), sizePtr, uint64(colorspace), uint64(quality),
+		uint64(method), uint64(losslessVal), uint64(exactVal))
 	if err != nil {
 		return fmt.Errorf("encode: %w", err)
 	}

@@ -9,7 +9,7 @@ void* allocate(size_t size);
 void deallocate(void *ptr);
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out);
-uint8_t* encode(uint8_t *rgb_in, int width, int height, size_t *size, int colorspace, int quality, int lossless);
+uint8_t* encode(uint8_t *rgb_in, int width, int height, size_t *size, int colorspace, int quality, int method, int lossless, int exact);
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out) {
 
@@ -97,7 +97,7 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
     return 1;
 }
 
-uint8_t* encode(uint8_t *in, int w, int h, size_t *size, int colorspace, int quality, int lossless) {
+uint8_t* encode(uint8_t *in, int w, int h, size_t *size, int colorspace, int quality, int method, int lossless, int exact) {
     uint8_t *out = NULL;
 
     WebPConfig config;
@@ -105,8 +105,10 @@ uint8_t* encode(uint8_t *in, int w, int h, size_t *size, int colorspace, int qua
         return out;
     }
 
-    config.lossless = lossless;
     config.quality = quality;
+    config.method = method;
+    config.lossless = lossless;
+    config.exact = exact;
 
     int cw = (w+1)/2;
     int ch = (h+1)/2;

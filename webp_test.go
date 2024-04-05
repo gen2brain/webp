@@ -128,7 +128,7 @@ func TestEncodeWasm(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = encode(io.Discard, img, 75, false)
+	err = encode(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestEncodeDynamic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = encodeDynamic(io.Discard, img, 75, false)
+	err = encodeDynamic(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +181,7 @@ func BenchmarkEncodeWasm(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		err := encode(io.Discard, img, 75, false)
+		err = encode(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
 		if err != nil {
 			b.Error(err)
 		}
@@ -200,7 +200,7 @@ func BenchmarkEncodeDynamic(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		err := encodeDynamic(io.Discard, img, 75, false)
+		err = encodeDynamic(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
 		if err != nil {
 			b.Error(err)
 		}

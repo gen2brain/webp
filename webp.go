@@ -32,12 +32,19 @@ type WEBP struct {
 // DefaultQuality is the default quality encoding parameter.
 const DefaultQuality = 75
 
+// DefaultMethod is the default method encoding parameter.
+const DefaultMethod = 4
+
 // Options are the encoding parameters.
 type Options struct {
 	// Quality in the range [0,100]. Quality of 100 implies Lossless. Default is 75.
 	Quality int
 	// Lossless indicates whether to use the lossless compression. Lossless will ignore quality.
 	Lossless bool
+	// Method is quality/speed trade-off (0=fast, 6=slower-better). Default is 4.
+	Method int
+	// Exact preserve the exact RGB values in transparent area.
+	Exact bool
 }
 
 // Decode reads a WEBP image from r and returns it as an image.Image.
@@ -104,26 +111,36 @@ func DecodeAll(r io.Reader) (*WEBP, error) {
 func Encode(w io.Writer, m image.Image, o ...Options) error {
 	lossless := false
 	quality := DefaultQuality
+	method := DefaultMethod
+	exact := false
 
 	if o != nil {
 		opt := o[0]
 		lossless = opt.Lossless
 		quality = opt.Quality
+		method = opt.Method
+		exact = opt.Exact
 
 		if quality <= 0 {
 			quality = DefaultQuality
 		} else if quality > 100 {
 			quality = 100
 		}
+
+		if method < 0 {
+			method = DefaultMethod
+		} else if method > 6 {
+			method = 6
+		}
 	}
 
 	if dynamic {
-		err := encodeDynamic(w, m, quality, lossless)
+		err := encodeDynamic(w, m, quality, method, lossless, exact)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := encode(w, m, quality, lossless)
+		err := encode(w, m, quality, method, lossless, exact)
 		if err != nil {
 			return err
 		}

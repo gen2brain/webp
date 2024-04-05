@@ -109,7 +109,7 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	return ret, cfg, nil
 }
 
-func encodeDynamic(w io.Writer, m image.Image, quality int, lossless bool) error {
+func encodeDynamic(w io.Writer, m image.Image, quality, method int, lossless, exact bool) error {
 	var config webpConfig
 	if !webpConfigInit(&config) {
 		return ErrEncode
@@ -117,10 +117,16 @@ func encodeDynamic(w io.Writer, m image.Image, quality int, lossless bool) error
 
 	config.Quality = float32(quality)
 	config.ThreadLevel = 1
+	config.Method = int32(method)
 
 	config.Lossless = 0
 	if lossless {
 		config.Lossless = 1
+	}
+
+	config.Exact = 0
+	if exact {
+		config.Exact = 1
 	}
 
 	var picture webpPicture
