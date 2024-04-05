@@ -135,6 +135,11 @@ func TestEncodeWasm(t *testing.T) {
 }
 
 func TestEncodeDynamic(t *testing.T) {
+	if err := Dynamic(); err != nil {
+		fmt.Println(err)
+		t.Skip()
+	}
+
 	img, err := Decode(bytes.NewReader(testWebp))
 	if err != nil {
 		t.Fatal(err)
