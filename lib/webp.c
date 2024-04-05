@@ -9,7 +9,7 @@ void* allocate(size_t size);
 void deallocate(void *ptr);
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out);
-uint8_t* encode(uint8_t *rgb_in, int width, int height, int stride, size_t *size, int quality, int lossless);
+uint8_t* encode(uint8_t *rgb_in, int width, int height, size_t *size, int colorspace, int quality, int lossless);
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out) {
 
@@ -97,17 +97,69 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
     return 1;
 }
 
-uint8_t* encode(uint8_t *rgb_in, int width, int height, int stride, size_t *size, int quality, int lossless) {
-    size_t ret;
-    uint8_t *out;
+uint8_t* encode(uint8_t *in, int w, int h, size_t *size, int colorspace, int quality, int lossless) {
+    uint8_t *out = NULL;
 
-    if(lossless) {
-        ret = WebPEncodeLosslessRGBA(rgb_in, width, height, stride, &out);
-    } else {
-        ret = WebPEncodeRGBA(rgb_in, width, height, stride, (float)quality, &out);
+    WebPConfig config;
+    if(!WebPConfigInit(&config)) {
+        return out;
     }
 
-    *size = ret;
+    config.lossless = lossless;
+    config.quality = quality;
+
+    int cw = (w+1)/2;
+    int ch = (h+1)/2;
+
+    int i0 = 1*w*h + 0*cw*ch;
+    int i1 = 1*w*h + 1*cw*ch;
+    int i2 = 1*w*h + 2*cw*ch;
+
+    WebPPicture picture;
+    if(!WebPPictureInit(&picture)) {
+        return out;
+    }
+
+    picture.width = w;
+    picture.height = h;
+
+    if(colorspace == WEBP_YUV420A) {
+        picture.use_argb = 0;
+        picture.colorspace = colorspace;
+        picture.y = &in[0];
+        picture.u = &in[i0];
+        picture.v = &in[i1];
+        picture.a = &in[i2];
+        picture.y_stride = w;
+        picture.uv_stride = cw;
+        picture.a_stride = w;
+    } else {
+        picture.use_argb = 1;
+        picture.argb_stride = w * 4;
+
+        if(!WebPPictureImportRGBA(&picture, in, picture.argb_stride)) {
+            WebPPictureFree(&picture);
+            return out;
+        }
+    }
+
+    WebPMemoryWriter writer;
+    picture.writer = WebPMemoryWrite;
+    picture.custom_ptr = &writer;
+    WebPMemoryWriterInit(&writer);
+
+    if(!WebPEncode(&config, &picture)) {
+        WebPPictureFree(&picture);
+        WebPMemoryWriterClear(&writer);
+        return out;
+    }
+
+    *size = writer.size;
+    out = writer.mem;
+
+    WebPPictureFree(&picture);
+    writer.mem = NULL;
+    WebPMemoryWriterClear(&writer);
 
     return out;
 }

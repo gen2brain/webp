@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"sync/atomic"
+	"unsafe"
 
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
@@ -30,7 +31,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	var data []byte
 
 	if configOnly {
-		data = make([]byte, maxWebpHeaderSize)
+		data = make([]byte, webpMaxHeaderSize)
 		_, err = r.Read(data)
 		if err != nil {
 			return nil, cfg, fmt.Errorf("read: %w", err)
@@ -210,17 +211,49 @@ func encode(w io.Writer, m image.Image, quality int, lossless bool) error {
 		initialize()
 	}
 
-	img := imageToNRGBA(m)
+	var data []byte
+	var colorspace int
+
+	var width = m.Bounds().Dx()
+	var height = m.Bounds().Dy()
+
+	switch img := m.(type) {
+	case *image.YCbCr:
+		i := imageToNRGBA(img)
+		data = i.Pix
+	case *image.NYCbCrA:
+		if img.SubsampleRatio == image.YCbCrSubsampleRatio420 {
+			length := len(img.Y) + len(img.Cb) + len(img.Cr) + len(img.A)
+			var b = struct {
+				addr *uint8
+				len  int
+				cap  int
+			}{&img.Y[0], length, length}
+			data = *(*[]byte)(unsafe.Pointer(&b))
+			colorspace = 4 // WEBP_YUV420A
+		} else {
+			i := imageToNRGBA(img)
+			data = i.Pix
+		}
+	case *image.RGBA:
+		data = img.Pix
+	case *image.NRGBA:
+		data = img.Pix
+	default:
+		i := imageToNRGBA(img)
+		data = i.Pix
+	}
+
 	ctx := context.Background()
 
-	res, err := _alloc.Call(ctx, uint64(len(img.Pix)))
+	res, err := _alloc.Call(ctx, uint64(len(data)))
 	if err != nil {
 		return fmt.Errorf("alloc: %w", err)
 	}
 	inPtr := res[0]
 	defer _free.Call(ctx, inPtr)
 
-	ok := mod.Memory().Write(uint32(inPtr), img.Pix)
+	ok := mod.Memory().Write(uint32(inPtr), data)
 	if !ok {
 		return ErrMemWrite
 	}
@@ -237,10 +270,11 @@ func encode(w io.Writer, m image.Image, quality int, lossless bool) error {
 		useLossless = 1
 	}
 
-	res, err = _encode.Call(ctx, inPtr, uint64(img.Bounds().Dx()), uint64(img.Bounds().Dy()), uint64(img.Stride), sizePtr, uint64(quality), uint64(useLossless))
+	res, err = _encode.Call(ctx, inPtr, uint64(width), uint64(height), sizePtr, uint64(colorspace), uint64(quality), uint64(useLossless))
 	if err != nil {
 		return fmt.Errorf("encode: %w", err)
 	}
+	defer _free.Call(ctx, res[0])
 
 	size, ok := mod.Memory().ReadUint64Le(uint32(sizePtr))
 	if !ok {
@@ -250,8 +284,6 @@ func encode(w io.Writer, m image.Image, quality int, lossless bool) error {
 	if size == 0 {
 		return ErrEncode
 	}
-
-	defer _free.Call(ctx, res[0])
 
 	out, ok := mod.Memory().Read(uint32(res[0]), uint32(size))
 	if !ok {

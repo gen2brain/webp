@@ -17,7 +17,8 @@ var (
 )
 
 const (
-	maxWebpHeaderSize = 32
+	webpMaxHeaderSize     = 32
+	webpEncoderABIVersion = 0x020f
 )
 
 // WEBP represents the possibly multiple images stored in a WEBP file.

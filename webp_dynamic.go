@@ -18,7 +18,7 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	var data []byte
 
 	if configOnly {
-		data = make([]byte, maxWebpHeaderSize)
+		data = make([]byte, webpMaxHeaderSize)
 		_, err = r.Read(data)
 		if err != nil {
 			return nil, cfg, err
@@ -110,33 +110,92 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 }
 
 func encodeDynamic(w io.Writer, m image.Image, quality int, lossless bool) error {
-	img := imageToNRGBA(m)
-
-	out := new(uint8)
-	pix := unsafe.SliceData(img.Pix)
-
-	var size uint64
-	if lossless {
-		size = webpEncodeLosslessRGBA(pix, img.Bounds().Dx(), img.Bounds().Dy(), img.Stride, &out)
-		if size == 0 {
-			return ErrEncode
-		}
-	} else {
-		size = webpEncodeRGBA(pix, img.Bounds().Dx(), img.Bounds().Dy(), img.Stride, float32(quality), &out)
-		if size == 0 {
-			return ErrEncode
-		}
-	}
-
-	if out == nil {
+	var config webpConfig
+	if !webpConfigInit(&config) {
 		return ErrEncode
 	}
 
-	defer webpFree(out)
+	config.Quality = float32(quality)
+	config.ThreadLevel = 1
 
-	_, err := w.Write(unsafe.Slice(out, size))
-	if err != nil {
-		return fmt.Errorf("write: %w", err)
+	config.Lossless = 0
+	if lossless {
+		config.Lossless = 1
+	}
+
+	var picture webpPicture
+	if !webpPictureInit(&picture) {
+		return ErrEncode
+	}
+	defer webpPictureFree(&picture)
+
+	picture.Width = int32(m.Bounds().Dx())
+	picture.Height = int32(m.Bounds().Dy())
+
+	var data []byte
+
+	switch img := m.(type) {
+	case *image.YCbCr:
+		i := imageToNRGBA(img)
+		data = i.Pix
+		picture.UseArgb = 1
+		picture.ArgbStride = int32(i.Stride)
+	case *image.NYCbCrA:
+		if img.SubsampleRatio == image.YCbCrSubsampleRatio420 {
+			picture.Y = unsafe.SliceData(img.Y)
+			picture.U = unsafe.SliceData(img.Cb)
+			picture.V = unsafe.SliceData(img.Cr)
+			picture.A = unsafe.SliceData(img.A)
+			picture.YStride = int32(img.YStride)
+			picture.UvStride = int32(img.CStride)
+			picture.AStride = int32(img.AStride)
+			picture.UseArgb = 0
+			picture.Colorspace = 4 // WEBP_YUV420A
+		} else {
+			i := imageToNRGBA(img)
+			data = i.Pix
+			picture.UseArgb = 1
+			picture.ArgbStride = int32(i.Stride)
+		}
+	case *image.RGBA:
+		data = img.Pix
+		picture.UseArgb = 1
+		picture.ArgbStride = int32(img.Stride)
+	case *image.NRGBA:
+		data = img.Pix
+		picture.UseArgb = 1
+		picture.ArgbStride = int32(img.Stride)
+	default:
+		i := imageToNRGBA(img)
+		data = i.Pix
+		picture.UseArgb = 1
+		picture.ArgbStride = int32(i.Stride)
+	}
+
+	if picture.UseArgb == 1 {
+		if !webpPictureImportRGBA(&picture, unsafe.SliceData(data), int(picture.ArgbStride)) {
+			return ErrEncode
+		}
+	}
+
+	writeCallback := func(d *uint8, size uint64, picture *webpPicture) int {
+		_, err := w.Write(unsafe.Slice(d, size))
+		if err != nil {
+			return 0
+		}
+
+		return 1
+	}
+
+	var writer webpMemoryWriter
+	webpMemoryWriterInit(&writer)
+	defer webpMemoryWriterClear(&writer)
+
+	picture.Writer = purego.NewCallback(writeCallback)
+	picture.CustomPtr = (*byte)(unsafe.Pointer(&writer))
+
+	if !webpEncode(&config, &picture) {
+		return ErrEncode
 	}
 
 	return nil
@@ -173,12 +232,16 @@ func init() {
 	purego.RegisterLibFunc(&_webpDemuxNextFrame, libwebpDemux, "WebPDemuxNextFrame")
 	purego.RegisterLibFunc(&_webpDemuxGetFrame, libwebpDemux, "WebPDemuxGetFrame")
 	purego.RegisterLibFunc(&_webpDecode, libwebp, "WebPDecode")
-	purego.RegisterLibFunc(&_webpGetInfo, libwebp, "WebPGetInfo")
 	purego.RegisterLibFunc(&_webpInitDecoderConfig, libwebp, "WebPInitDecoderConfigInternal")
-	purego.RegisterLibFunc(&_webpFree, libwebp, "WebPFree")
+	purego.RegisterLibFunc(&_webpGetInfo, libwebp, "WebPGetInfo")
+	purego.RegisterLibFunc(&_webpPictureImportRGBA, libwebp, "WebPPictureImportRGBA")
+	purego.RegisterLibFunc(&_webpConfigInit, libwebp, "WebPConfigInitInternal")
+	purego.RegisterLibFunc(&_webpPictureInit, libwebp, "WebPPictureInitInternal")
+	purego.RegisterLibFunc(&_webpPictureFree, libwebp, "WebPPictureFree")
+	purego.RegisterLibFunc(&_webpMemoryWriterInit, libwebp, "WebPMemoryWriterInit")
+	purego.RegisterLibFunc(&_webpMemoryWriterClear, libwebp, "WebPMemoryWriterClear")
 	purego.RegisterLibFunc(&_webpFreeDecBuffer, libwebp, "WebPFreeDecBuffer")
-	purego.RegisterLibFunc(&_webpEncodeRGBA, libwebp, "WebPEncodeRGBA")
-	purego.RegisterLibFunc(&_webpEncodeLosslessRGBA, libwebp, "WebPEncodeLosslessRGBA")
+	purego.RegisterLibFunc(&_webpEncode, libwebp, "WebPEncode")
 }
 
 var (
@@ -195,12 +258,16 @@ var (
 	_webpDemuxNextFrame       func(*webpIterator) int
 	_webpDemuxGetFrame        func(*webpDemuxer, int, *webpIterator) int
 	_webpDecode               func(*uint8, uint64, *webpDecoderConfig) int
-	_webpGetInfo              func(*uint8, uint64, *int, *int) int
 	_webpInitDecoderConfig    func(*webpDecoderConfig) int
-	_webpFree                 func(*uint8)
+	_webpGetInfo              func(*uint8, uint64, *int, *int) int
+	_webpPictureImportRGBA    func(*webpPicture, *uint8, int) int
+	_webpConfigInit           func(*webpConfig, int, float32, int) int
+	_webpPictureInit          func(*webpPicture, int) int
+	_webpPictureFree          func(*webpPicture)
+	_webpMemoryWriterInit     func(*webpMemoryWriter)
+	_webpMemoryWriterClear    func(*webpMemoryWriter)
 	_webpFreeDecBuffer        func(*webpDecBuffer)
-	_webpEncodeRGBA           func(*uint8, int, int, int, float32, **uint8) uint64
-	_webpEncodeLosslessRGBA   func(*uint8, int, int, int, **uint8) uint64
+	_webpEncode               func(*webpConfig, *webpPicture) int
 )
 
 func webpDemux(data *webpData) *webpDemuxer {
@@ -233,6 +300,12 @@ func webpDecode(data *uint8, size uint64, config *webpDecoderConfig) bool {
 	return ret == 0
 }
 
+func webpInitDecoderConfig(config *webpDecoderConfig) bool {
+	ret := _webpInitDecoderConfig(config)
+
+	return ret == 0
+}
+
 func webpGetInfo(data []byte) (int, int, bool) {
 	var width, height int
 
@@ -242,26 +315,44 @@ func webpGetInfo(data []byte) (int, int, bool) {
 	return width, height, b
 }
 
-func webpInitDecoderConfig(config *webpDecoderConfig) bool {
-	ret := _webpInitDecoderConfig(config)
+func webpPictureImportRGBA(picture *webpPicture, in *uint8, stride int) bool {
+	ret := _webpPictureImportRGBA(picture, in, stride)
 
-	return ret == 0
+	return ret != 0
 }
 
-func webpFree(p *uint8) {
-	_webpFree(p)
+func webpConfigInit(config *webpConfig) bool {
+	ret := _webpConfigInit(config, 0, DefaultQuality, webpEncoderABIVersion)
+
+	return ret != 0
+}
+
+func webpPictureInit(picture *webpPicture) bool {
+	ret := _webpPictureInit(picture, webpEncoderABIVersion)
+
+	return ret != 0
+}
+
+func webpPictureFree(picture *webpPicture) {
+	_webpPictureFree(picture)
+}
+
+func webpMemoryWriterInit(writer *webpMemoryWriter) {
+	_webpMemoryWriterInit(writer)
+}
+
+func webpMemoryWriterClear(writer *webpMemoryWriter) {
+	_webpMemoryWriterClear(writer)
 }
 
 func webpFreeDecBuffer(p *webpDecBuffer) {
 	_webpFreeDecBuffer(p)
 }
 
-func webpEncodeRGBA(data *uint8, width, height, stride int, quality float32, output **uint8) uint64 {
-	return _webpEncodeRGBA(data, width, height, stride, quality, output)
-}
+func webpEncode(config *webpConfig, picture *webpPicture) bool {
+	ret := _webpEncode(config, picture)
 
-func webpEncodeLosslessRGBA(data *uint8, width, height, stride int, output **uint8) uint64 {
-	return _webpEncodeLosslessRGBA(data, width, height, stride, output)
+	return ret != 0
 }
 
 const modeYUVA = 12
@@ -347,4 +438,99 @@ type webpYUVABuffer struct {
 	USize   uint64
 	VSize   uint64
 	ASize   uint64
+}
+
+type webpPicture struct {
+	UseArgb       int32
+	Colorspace    uint32
+	Width         int32
+	Height        int32
+	Y             *uint8
+	U             *uint8
+	V             *uint8
+	YStride       int32
+	UvStride      int32
+	A             *uint8
+	AStride       int32
+	Pad1          [2]uint32
+	Argb          *uint32
+	ArgbStride    int32
+	Pad2          [3]uint32
+	Writer        uintptr
+	CustomPtr     *byte
+	ExtraInfoType int32
+	ExtraInfo     *uint8
+	Stats         *webpAuxStats
+	ErrorCode     uint32
+	ProgressHook  *[0]byte
+	UserData      *byte
+	Pad3          [3]uint32
+	Pad4          *uint8
+	Pad5          *uint8
+	Pad6          [8]uint32
+	Memory_       *byte
+	MemoryArgb    *byte
+	Pad7          [2]*byte
+}
+
+type webpConfig struct {
+	Lossless         int32
+	Quality          float32
+	Method           int32
+	ImageHint        uint32
+	TargetSize       int32
+	TargetPsnr       float32
+	Segments         int32
+	SnsStrength      int32
+	FilterStrength   int32
+	FilterSharpness  int32
+	FilterType       int32
+	Autofilter       int32
+	AlphaCompression int32
+	AlphaFiltering   int32
+	AlphaQuality     int32
+	Pass             int32
+	ShowCompressed   int32
+	Preprocessing    int32
+	Partitions       int32
+	PartitionLimit   int32
+	EmulateJpegSize  int32
+	ThreadLevel      int32
+	LowMemory        int32
+	NearLossless     int32
+	Exact            int32
+	UseDeltaPalette  int32
+	UseSharpYuv      int32
+	Qmin             int32
+	Qmax             int32
+}
+
+type webpAuxStats struct {
+	CodedSize        int32
+	PSNR             [5]float32
+	BlockCount       [3]int32
+	HeaderBytes      [2]int32
+	ResidualBytes    [3][4]int32
+	SegmentSize      [4]int32
+	SegmentQuant     [4]int32
+	SegmentLevel     [4]int32
+	AlphaDataSize    int32
+	LayerDataSize    int32
+	LosslessFeatures uint32
+	HistogramBits    int32
+	TransformBits    int32
+	CacheBits        int32
+	PaletteSize      int32
+	LosslessSize     int32
+	LosslessHdrSize  int32
+	LosslessDataSize int32
+	Pad              [2]uint32
+}
+
+type webpMemoryWriter struct {
+	Mem     *uint8
+	Size    uint64
+	MaxSize uint64
+	Pad     [1]uint32
+	_       [4]byte
 }

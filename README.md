@@ -23,8 +23,8 @@ BenchmarkDecodeTranspiled-8 (1)                  138	   8562133 ns/op	 1335622 B
 BenchmarkDecodeCGo1-8 (2)                        300	   3897300 ns/op	 1333630 B/op	      21 allocs/op
 BenchmarkDecodeCGo2-8 (3)                        314	   3801195 ns/op	 1334020 B/op	      22 allocs/op
 
-BenchmarkEncodeWasm-8                             10	 103065077 ns/op	  133804 B/op	      17 allocs/op
-BenchmarkEncodeDynamic-8                          52	  22548953 ns/op	   26388 B/op	      13 allocs/op
+BenchmarkEncodeWasm-8                             13	  88419790 ns/op	   72773 B/op	      16 allocs/op
+BenchmarkEncodeDynamic-8                          55	  19022243 ns/op	   19888 B/op	      42 allocs/op
 BenchmarkEncodeTranspiled-8 (1)                   18	  60042805 ns/op	   76104 B/op	      36 allocs/op
 BenchmarkEncodeCGo1-8 (2)                         31	  32538122 ns/op	 3213497 B/op	  524294 allocs/op
 BenchmarkEncodeCGo2-8 (3)                         52	  22482704 ns/op	   26043 B/op	       5 allocs/op

@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	"image/png"
 	"io"
 	"testing"
 )
 
 //go:embed testdata/test.webp
 var testWebp []byte
+
+//go:embed testdata/test.png
+var testPng []byte
 
 //go:embed testdata/anim.webp
 var testWebpAnim []byte
@@ -28,7 +32,7 @@ func TestDecode(t *testing.T) {
 	}
 }
 
-func TestDecodeWASM(t *testing.T) {
+func TestDecodeWasm(t *testing.T) {
 	img, _, err := decode(bytes.NewReader(testWebp), false, false)
 	if err != nil {
 		t.Fatal(err)
@@ -106,13 +110,37 @@ func TestDecodeConfig(t *testing.T) {
 	}
 }
 
-func TestEncode(t *testing.T) {
-	img, err := Decode(bytes.NewReader(testWebp))
+func TestEncodeRGBA(t *testing.T) {
+	img, err := png.Decode(bytes.NewReader(testPng))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	err = Encode(io.Discard, img)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEncodeWasm(t *testing.T) {
+	img, err := Decode(bytes.NewReader(testWebp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = encode(io.Discard, img, 75, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestEncodeDynamic(t *testing.T) {
+	img, err := Decode(bytes.NewReader(testWebp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = encodeDynamic(io.Discard, img, 75, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,29 +163,6 @@ func BenchmarkDecodeDynamic(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		_, _, err := decodeDynamic(bytes.NewReader(testWebp), false, false)
-		if err != nil {
-			b.Error(err)
-		}
-	}
-}
-
-func BenchmarkDecodeConfigWasm(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_, _, err := decode(bytes.NewReader(testWebp), true, false)
-		if err != nil {
-			b.Error(err)
-		}
-	}
-}
-
-func BenchmarkDecodeConfigDynamic(b *testing.B) {
-	if err := Dynamic(); err != nil {
-		fmt.Println(err)
-		b.Skip()
-	}
-
-	for i := 0; i < b.N; i++ {
-		_, _, err := decodeDynamic(bytes.NewReader(testWebp), true, false)
 		if err != nil {
 			b.Error(err)
 		}
