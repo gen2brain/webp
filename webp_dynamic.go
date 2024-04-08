@@ -186,27 +186,25 @@ func encodeDynamic(w io.Writer, m image.Image, quality, method int, lossless, ex
 		}
 	}
 
-	writeCallback := func(d *uint8, size uint64, picture *webpPicture) int {
-		_, err := w.Write(unsafe.Slice(d, size))
-		if err != nil {
-			return 0
-		}
-
-		return 1
-	}
-
-	var writer webpMemoryWriter
-	webpMemoryWriterInit(&writer)
-	defer webpMemoryWriterClear(&writer)
-
-	picture.Writer = purego.NewCallback(writeCallback)
-	picture.CustomPtr = (*byte)(unsafe.Pointer(&writer))
+	picture.Writer = writeCallback
+	picture.CustomPtr = (*byte)(unsafe.Pointer(&w))
 
 	if !webpEncode(&config, &picture) {
 		return ErrEncode
 	}
 
 	return nil
+}
+
+func write(d *uint8, size uint64, picture *webpPicture) int {
+	w := *(*io.Writer)(unsafe.Pointer(picture.CustomPtr))
+
+	_, err := w.Write(unsafe.Slice(d, size))
+	if err != nil {
+		return 0
+	}
+
+	return 1
 }
 
 func init() {
@@ -246,8 +244,6 @@ func init() {
 	purego.RegisterLibFunc(&_webpConfigInit, libwebp, "WebPConfigInitInternal")
 	purego.RegisterLibFunc(&_webpPictureInit, libwebp, "WebPPictureInitInternal")
 	purego.RegisterLibFunc(&_webpPictureFree, libwebp, "WebPPictureFree")
-	purego.RegisterLibFunc(&_webpMemoryWriterInit, libwebp, "WebPMemoryWriterInit")
-	purego.RegisterLibFunc(&_webpMemoryWriterClear, libwebp, "WebPMemoryWriterClear")
 	purego.RegisterLibFunc(&_webpFreeDecBuffer, libwebp, "WebPFreeDecBuffer")
 	purego.RegisterLibFunc(&_webpEncode, libwebp, "WebPEncode")
 }
@@ -257,6 +253,8 @@ var (
 	libwebpDemux uintptr
 	dynamic      bool
 	dynamicErr   error
+
+	writeCallback = purego.NewCallback(write)
 )
 
 var (
@@ -272,8 +270,6 @@ var (
 	_webpConfigInit           func(*webpConfig, int, float32, int) int
 	_webpPictureInit          func(*webpPicture, int) int
 	_webpPictureFree          func(*webpPicture)
-	_webpMemoryWriterInit     func(*webpMemoryWriter)
-	_webpMemoryWriterClear    func(*webpMemoryWriter)
 	_webpFreeDecBuffer        func(*webpDecBuffer)
 	_webpEncode               func(*webpConfig, *webpPicture) int
 )
@@ -343,14 +339,6 @@ func webpPictureInit(picture *webpPicture) bool {
 
 func webpPictureFree(picture *webpPicture) {
 	_webpPictureFree(picture)
-}
-
-func webpMemoryWriterInit(writer *webpMemoryWriter) {
-	_webpMemoryWriterInit(writer)
-}
-
-func webpMemoryWriterClear(writer *webpMemoryWriter) {
-	_webpMemoryWriterClear(writer)
 }
 
 func webpFreeDecBuffer(p *webpDecBuffer) {
