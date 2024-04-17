@@ -18,13 +18,14 @@ var (
 
 const (
 	webpMaxHeaderSize     = 32
+	webpDemuxABIVersion   = 0x0107
 	webpEncoderABIVersion = 0x020f
 )
 
 // WEBP represents the possibly multiple images stored in a WEBP file.
 type WEBP struct {
 	// Decoded images.
-	Image []*image.NYCbCrA
+	Image []image.Image
 	// Delay times, one per frame, in milliseconds.
 	Delay []int
 }

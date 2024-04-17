@@ -16,6 +16,7 @@ import (
 func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
 	var cfg image.Config
 
+	var ok bool
 	var err error
 	var data []byte
 
@@ -32,13 +33,11 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 		}
 	}
 
-	width, height, ok := webpGetInfo(data)
+	cfg.Width, cfg.Height, ok = webpGetInfo(data)
 	if !ok {
 		return nil, cfg, ErrDecode
 	}
 
-	cfg.Width = width
-	cfg.Height = height
 	cfg.ColorModel = color.NYCbCrAModel
 
 	if configOnly {
@@ -49,57 +48,67 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	wpData.Size = uint64(len(data))
 	wpData.Bytes = &data[0]
 
-	demuxer := webpDemux(&wpData)
-	defer webpDemuxDelete(demuxer)
-
 	delay := make([]int, 0)
-	images := make([]*image.NYCbCrA, 0)
+	images := make([]image.Image, 0)
 
-	var iter webpIterator
-	defer webpDemuxReleaseIterator(&iter)
+	rect := image.Rect(0, 0, cfg.Width, cfg.Height)
+
+	if decodeAll {
+		var options webpAnimDecoderOptions
+		webpAnimDecoderOptionsInit(&options)
+		options.ColorMode = modeRgbA
+		options.UseThreads = 1
+
+		decoder := webpAnimDecoderNew(&wpData, &options)
+		defer webpAnimDecoderDelete(decoder)
+
+		dur := 0
+		out := new(uint8)
+
+		for webpAnimDecoderHasMoreFrames(decoder) {
+			if !webpAnimDecoderGetNext(decoder, &out, &dur) {
+				return nil, cfg, ErrDecode
+			}
+
+			img := image.NewRGBA(rect)
+			copy(img.Pix, unsafe.Slice(out, cfg.Width*cfg.Height*4))
+
+			images = append(images, img)
+			delay = append(delay, dur)
+		}
+
+		ret := &WEBP{
+			Image: images,
+			Delay: delay,
+		}
+
+		runtime.KeepAlive(data)
+
+		return ret, cfg, nil
+	}
 
 	var config webpDecoderConfig
 	if !webpInitDecoderConfig(&config) {
 		return nil, cfg, ErrDecode
 	}
+	defer webpFreeDecBuffer(&config.Output)
 
 	config.Output.Colorspace = modeYUVA
 	config.Options.UseThreads = 1
 
-	if !webpDemuxGetFrame(demuxer, 1, &iter) {
+	if !webpDecode(wpData.Bytes, wpData.Size, &config) {
 		return nil, cfg, ErrDecode
 	}
 
-	rect := image.Rect(0, 0, cfg.Width, cfg.Height)
+	img := image.NewNYCbCrA(rect, image.YCbCrSubsampleRatio420)
+	out := *(*webpYUVABuffer)(unsafe.Pointer(&config.Output.U))
 
-	for {
-		ok = webpDecode(iter.Fragment.Bytes, iter.Fragment.Size, &config)
-		if !ok {
-			break
-		}
+	copy(img.Y, unsafe.Slice(out.Y, out.YSize))
+	copy(img.Cb, unsafe.Slice(out.U, out.USize))
+	copy(img.Cr, unsafe.Slice(out.V, out.VSize))
+	copy(img.A, unsafe.Slice(out.A, out.ASize))
 
-		img := image.NewNYCbCrA(rect, image.YCbCrSubsampleRatio420)
-		out := *(*webpYUVABuffer)(unsafe.Pointer(&config.Output.U))
-
-		copy(img.Y, unsafe.Slice(out.Y, out.YSize))
-		copy(img.Cb, unsafe.Slice(out.U, out.USize))
-		copy(img.Cr, unsafe.Slice(out.V, out.VSize))
-		copy(img.A, unsafe.Slice(out.A, out.ASize))
-
-		images = append(images, img)
-		delay = append(delay, int(iter.Duration))
-
-		webpFreeDecBuffer(&config.Output)
-
-		if !decodeAll {
-			break
-		}
-
-		ok = webpDemuxNextFrame(&iter)
-		if !ok {
-			break
-		}
-	}
+	images = append(images, img)
 
 	runtime.KeepAlive(data)
 
@@ -232,11 +241,11 @@ func init() {
 		return
 	}
 
-	purego.RegisterLibFunc(&_webpDemux, libwebpDemux, "WebPDemuxInternal")
-	purego.RegisterLibFunc(&_webpDemuxDelete, libwebpDemux, "WebPDemuxDelete")
-	purego.RegisterLibFunc(&_webpDemuxReleaseIterator, libwebpDemux, "WebPDemuxReleaseIterator")
-	purego.RegisterLibFunc(&_webpDemuxNextFrame, libwebpDemux, "WebPDemuxNextFrame")
-	purego.RegisterLibFunc(&_webpDemuxGetFrame, libwebpDemux, "WebPDemuxGetFrame")
+	purego.RegisterLibFunc(&_webpAnimDecoderOptionsInit, libwebpDemux, "WebPAnimDecoderOptionsInitInternal")
+	purego.RegisterLibFunc(&_webpAnimDecoderNew, libwebpDemux, "WebPAnimDecoderNewInternal")
+	purego.RegisterLibFunc(&_webpAnimDecoderGetNext, libwebpDemux, "WebPAnimDecoderGetNext")
+	purego.RegisterLibFunc(&_webpAnimDecoderHasMoreFrames, libwebpDemux, "WebPAnimDecoderHasMoreFrames")
+	purego.RegisterLibFunc(&_webpAnimDecoderDelete, libwebpDemux, "WebPAnimDecoderDelete")
 	purego.RegisterLibFunc(&_webpDecode, libwebp, "WebPDecode")
 	purego.RegisterLibFunc(&_webpInitDecoderConfig, libwebp, "WebPInitDecoderConfigInternal")
 	purego.RegisterLibFunc(&_webpGetInfo, libwebp, "WebPGetInfo")
@@ -258,44 +267,44 @@ var (
 )
 
 var (
-	_webpDemux                func(*webpData, int, *int, int) *webpDemuxer
-	_webpDemuxDelete          func(*webpDemuxer)
-	_webpDemuxReleaseIterator func(*webpIterator)
-	_webpDemuxNextFrame       func(*webpIterator) int
-	_webpDemuxGetFrame        func(*webpDemuxer, int, *webpIterator) int
-	_webpDecode               func(*uint8, uint64, *webpDecoderConfig) int
-	_webpInitDecoderConfig    func(*webpDecoderConfig) int
-	_webpGetInfo              func(*uint8, uint64, *int, *int) int
-	_webpPictureImportRGBA    func(*webpPicture, *uint8, int) int
-	_webpConfigInit           func(*webpConfig, int, float32, int) int
-	_webpPictureInit          func(*webpPicture, int) int
-	_webpPictureFree          func(*webpPicture)
-	_webpFreeDecBuffer        func(*webpDecBuffer)
-	_webpEncode               func(*webpConfig, *webpPicture) int
+	_webpAnimDecoderOptionsInit   func(*webpAnimDecoderOptions, int) int
+	_webpAnimDecoderNew           func(*webpData, *webpAnimDecoderOptions, int) *webpAnimDecoder
+	_webpAnimDecoderGetNext       func(*webpAnimDecoder, **uint8, *int) int
+	_webpAnimDecoderHasMoreFrames func(*webpAnimDecoder) int
+	_webpAnimDecoderDelete        func(*webpAnimDecoder)
+	_webpDecode                   func(*uint8, uint64, *webpDecoderConfig) int
+	_webpInitDecoderConfig        func(*webpDecoderConfig) int
+	_webpGetInfo                  func(*uint8, uint64, *int, *int) int
+	_webpPictureImportRGBA        func(*webpPicture, *uint8, int) int
+	_webpConfigInit               func(*webpConfig, int, float32, int) int
+	_webpPictureInit              func(*webpPicture, int) int
+	_webpPictureFree              func(*webpPicture)
+	_webpFreeDecBuffer            func(*webpDecBuffer)
+	_webpEncode                   func(*webpConfig, *webpPicture) int
 )
 
-func webpDemux(data *webpData) *webpDemuxer {
-	return _webpDemux(data, 0, nil, 0x0107) // WEBP_DEMUX_ABI_VERSION
+func webpAnimDecoderOptionsInit(options *webpAnimDecoderOptions) {
+	_webpAnimDecoderOptionsInit(options, webpDemuxABIVersion)
 }
 
-func webpDemuxDelete(demuxer *webpDemuxer) {
-	_webpDemuxDelete(demuxer)
+func webpAnimDecoderNew(data *webpData, options *webpAnimDecoderOptions) *webpAnimDecoder {
+	return _webpAnimDecoderNew(data, options, webpDemuxABIVersion)
 }
 
-func webpDemuxReleaseIterator(iterator *webpIterator) {
-	_webpDemuxReleaseIterator(iterator)
-}
-
-func webpDemuxNextFrame(iterator *webpIterator) bool {
-	ret := _webpDemuxNextFrame(iterator)
+func webpAnimDecoderGetNext(decoder *webpAnimDecoder, buf **uint8, duration *int) bool {
+	ret := _webpAnimDecoderGetNext(decoder, buf, duration)
 
 	return ret != 0
 }
 
-func webpDemuxGetFrame(demuxer *webpDemuxer, frameNumber int, iterator *webpIterator) bool {
-	ret := _webpDemuxGetFrame(demuxer, frameNumber, iterator)
+func webpAnimDecoderHasMoreFrames(decoder *webpAnimDecoder) bool {
+	ret := _webpAnimDecoderHasMoreFrames(decoder)
 
 	return ret != 0
+}
+
+func webpAnimDecoderDelete(decoder *webpAnimDecoder) {
+	_webpAnimDecoderDelete(decoder)
 }
 
 func webpDecode(data *uint8, size uint64, config *webpDecoderConfig) bool {
@@ -351,30 +360,16 @@ func webpEncode(config *webpConfig, picture *webpPicture) bool {
 	return ret != 0
 }
 
-const modeYUVA = 12
+const (
+	modeRgbA = 7
+	modeYUVA = 12
+)
 
-type webpDemuxer struct{}
+type webpAnimDecoder struct{}
 
 type webpData struct {
 	Bytes *uint8
 	Size  uint64
-}
-
-type webpIterator struct {
-	FrameNum      int32
-	NumFrames     int32
-	XOffset       int32
-	YOffset       int32
-	Width         int32
-	Height        int32
-	Duration      int32
-	DisposeMethod uint32
-	Complete      int32
-	Fragment      webpData
-	HasAlpha      int32
-	BlendMethod   uint32
-	_             [2]uint32
-	_             *byte
 }
 
 type webpDecoderOptions struct {
@@ -521,4 +516,10 @@ type webpAuxStats struct {
 	LosslessHdrSize  int32
 	LosslessDataSize int32
 	Pad              [2]uint32
+}
+
+type webpAnimDecoderOptions struct {
+	ColorMode  uint32
+	UseThreads int32
+	Padding    [7]uint32
 }

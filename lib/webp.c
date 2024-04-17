@@ -13,11 +13,11 @@ uint8_t* encode(uint8_t *rgb_in, int width, int height, size_t *size, int colors
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out) {
 
-    if(!WebPGetInfo(webp_in, webp_in_size, (int *)width, (int *)height)) {
-        return 0;
-    }
-
     if(config_only && !decode_all) {
+        if(!WebPGetInfo(webp_in, webp_in_size, (int *)width, (int *)height)) {
+            return 0;
+        }
+
         *count = 1;
         return 1;
     }
@@ -26,17 +26,49 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
     data.bytes = webp_in;
     data.size = webp_in_size;
 
-    WebPDemuxer* demux = WebPDemux(&data);
-    *count = WebPDemuxGetI(demux, WEBP_FF_FRAME_COUNT);
+    if(decode_all) {
+        WebPAnimDecoderOptions options;
+        WebPAnimDecoderOptionsInit(&options);
+        options.color_mode = MODE_rgbA;
 
-    if(config_only) {
-        WebPDemuxDelete(demux);
+        WebPAnimDecoder* dec = WebPAnimDecoderNew(&data, &options);
+
+        WebPAnimInfo info;
+        WebPAnimDecoderGetInfo(dec, &info);
+
+        *count = info.frame_count;
+        *width = info.canvas_width;
+        *height = info.canvas_height;
+
+        if(config_only) {
+            WebPAnimDecoderDelete(dec);
+            return 1;
+        }
+
+        int frame = 0;
+        int duration;
+
+        uint8_t* buf;
+        int buf_size = info.canvas_width * info.canvas_height * 4;
+
+        while(WebPAnimDecoderHasMoreFrames(dec)) {
+            if(!WebPAnimDecoderGetNext(dec, &buf, &duration)) {
+                WebPAnimDecoderDelete(dec);
+                return 0;
+            }
+
+            memcpy(out + buf_size*frame, buf, buf_size);
+            memcpy(delay + sizeof(int)*frame, &duration, sizeof(int));
+
+            frame++;
+        }
+
+        WebPAnimDecoderDelete(dec);
         return 1;
     }
 
     WebPDecoderConfig config;
     if(!WebPInitDecoderConfig(&config)) {
-        WebPDemuxDelete(demux);
         return 0;
     }
 
@@ -69,31 +101,12 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
     config.output.u.YUVA.a_size = i3;
     config.output.u.YUVA.a_stride = w;
 
-    WebPIterator iter;
-    if(WebPDemuxGetFrame(demux, 1, &iter)) {
-        do {
-            if(WebPDecode(iter.fragment.bytes, iter.fragment.size, &config) != VP8_STATUS_OK) {
-                WebPFreeDecBuffer(&config.output);
-                WebPDemuxDelete(demux);
-                return 0;
-            }
-
-            memcpy(delay + sizeof(int)*(iter.frame_num-1), &iter.duration, sizeof(int));
-
-            WebPFreeDecBuffer(&config.output);
-
-            if(!decode_all) {
-                break;
-            }
-        } while(WebPDemuxNextFrame(&iter));
-
-        WebPDemuxReleaseIterator(&iter);
-    } else {
-        WebPDemuxDelete(demux);
+    if(WebPDecode(data.bytes, data.size, &config) != VP8_STATUS_OK) {
+        WebPFreeDecBuffer(&config.output);
         return 0;
     }
 
-    WebPDemuxDelete(demux);
+    WebPFreeDecBuffer(&config.output);
     return 1;
 }
 
