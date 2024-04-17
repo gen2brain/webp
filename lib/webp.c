@@ -46,19 +46,22 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
         }
 
         int frame = 0;
-        int duration;
+        int timestamp, timestampPrev, duration;
 
         uint8_t* buf;
         int buf_size = info.canvas_width * info.canvas_height * 4;
 
         while(WebPAnimDecoderHasMoreFrames(dec)) {
-            if(!WebPAnimDecoderGetNext(dec, &buf, &duration)) {
+            if(!WebPAnimDecoderGetNext(dec, &buf, &timestamp)) {
                 WebPAnimDecoderDelete(dec);
                 return 0;
             }
 
             memcpy(out + buf_size*frame, buf, buf_size);
+
+            duration = timestamp - timestampPrev;
             memcpy(delay + sizeof(int)*frame, &duration, sizeof(int));
+            timestampPrev = timestamp;
 
             frame++;
         }

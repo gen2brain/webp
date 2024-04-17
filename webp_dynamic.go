@@ -62,11 +62,11 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 		decoder := webpAnimDecoderNew(&wpData, &options)
 		defer webpAnimDecoderDelete(decoder)
 
-		dur := 0
+		var timestamp, timestampPrev int
 		out := new(uint8)
 
 		for webpAnimDecoderHasMoreFrames(decoder) {
-			if !webpAnimDecoderGetNext(decoder, &out, &dur) {
+			if !webpAnimDecoderGetNext(decoder, &out, &timestamp) {
 				return nil, cfg, ErrDecode
 			}
 
@@ -74,7 +74,9 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 			copy(img.Pix, unsafe.Slice(out, cfg.Width*cfg.Height*4))
 
 			images = append(images, img)
-			delay = append(delay, dur)
+			delay = append(delay, timestamp-timestampPrev)
+
+			timestampPrev = timestamp
 		}
 
 		ret := &WEBP{
