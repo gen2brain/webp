@@ -522,11 +522,3 @@ type webpAuxStats struct {
 	LosslessDataSize int32
 	Pad              [2]uint32
 }
-
-type webpMemoryWriter struct {
-	Mem     *uint8
-	Size    uint64
-	MaxSize uint64
-	Pad     [1]uint32
-	_       [4]byte
-}

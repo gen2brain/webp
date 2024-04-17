@@ -58,26 +58,15 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 		return nil, cfg, ErrMemWrite
 	}
 
-	res, err = _alloc.Call(ctx, 4)
+	res, err = _alloc.Call(ctx, 4*3)
 	if err != nil {
 		return nil, cfg, fmt.Errorf("alloc: %w", err)
 	}
+	defer _free.Call(ctx, res[0])
+
 	widthPtr := res[0]
-	defer _free.Call(ctx, widthPtr)
-
-	res, err = _alloc.Call(ctx, 4)
-	if err != nil {
-		return nil, cfg, fmt.Errorf("alloc: %w", err)
-	}
-	heightPtr := res[0]
-	defer _free.Call(ctx, heightPtr)
-
-	res, err = _alloc.Call(ctx, 4)
-	if err != nil {
-		return nil, cfg, fmt.Errorf("alloc: %w", err)
-	}
-	countPtr := res[0]
-	defer _free.Call(ctx, countPtr)
+	heightPtr := res[0] + 4
+	countPtr := res[0] + 8
 
 	all := 0
 	if decodeAll {
