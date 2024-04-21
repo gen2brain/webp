@@ -1,4 +1,4 @@
-//go:build !unix && !darwin && !windows
+//go:build (!unix && !darwin && !windows) || nodynamic
 
 package webp
 
@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"image"
 	"io"
-	"runtime"
 )
 
 var (
 	dynamic    = false
-	dynamicErr = fmt.Errorf("webp: unsupported os: %s", runtime.GOOS)
+	dynamicErr = fmt.Errorf("webp: dynamic disabled")
 )
 
 func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
