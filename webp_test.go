@@ -8,6 +8,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
+	"os"
 	"testing"
 )
 
@@ -26,7 +27,12 @@ func TestDecode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = jpeg.Encode(io.Discard, img, nil)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(w, img, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -38,7 +44,12 @@ func TestDecodeWasm(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = jpeg.Encode(io.Discard, img.Image[0], nil)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(w, img.Image[0], nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -55,7 +66,12 @@ func TestDecodeDynamic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = jpeg.Encode(io.Discard, img.Image[0], nil)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(w, img.Image[0], nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -116,7 +132,12 @@ func TestEncodeRGBA(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = Encode(io.Discard, img)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = Encode(w, img)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +149,12 @@ func TestEncodeWasm(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = encode(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = encode(w, img, DefaultQuality, DefaultMethod, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +171,12 @@ func TestEncodeDynamic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = encodeDynamic(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = encodeDynamic(w, img, DefaultQuality, DefaultMethod, false, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,4 +236,29 @@ func BenchmarkEncodeDynamic(b *testing.B) {
 			b.Error(err)
 		}
 	}
+}
+
+type discard struct{}
+
+func (d discard) Close() error {
+	return nil
+}
+
+func (discard) Write(p []byte) (int, error) {
+	return len(p), nil
+}
+
+var discardCloser io.WriteCloser = discard{}
+
+func writeCloser(s ...string) (io.WriteCloser, error) {
+	if len(s) > 0 {
+		f, err := os.Create(s[0])
+		if err != nil {
+			return nil, err
+		}
+
+		return f, nil
+	}
+
+	return discardCloser, nil
 }
