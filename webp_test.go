@@ -77,8 +77,8 @@ func TestDecodeDynamic(t *testing.T) {
 	}
 }
 
-func TestDecodeAnim(t *testing.T) {
-	ret, err := DecodeAll(bytes.NewReader(testWebpAnim))
+func TestDecodeAnimWasm(t *testing.T) {
+	ret, _, err := decode(bytes.NewReader(testWebpAnim), false, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,9 +92,51 @@ func TestDecodeAnim(t *testing.T) {
 	}
 
 	for _, img := range ret.Image {
-		err = jpeg.Encode(io.Discard, img, nil)
+		w, err := writeCloser()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = jpeg.Encode(w, img, nil)
 		if err != nil {
 			t.Error(err)
+		}
+
+		err = w.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestDecodeAnimDynamic(t *testing.T) {
+	ret, _, err := decodeDynamic(bytes.NewReader(testWebpAnim), false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(ret.Image) != len(ret.Delay) {
+		t.Errorf("got %d, want %d", len(ret.Delay), len(ret.Image))
+	}
+
+	if len(ret.Image) != 17 {
+		t.Errorf("got %d, want %d", len(ret.Image), 17)
+	}
+
+	for _, img := range ret.Image {
+		w, err := writeCloser()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = jpeg.Encode(w, img, nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		err = w.Close()
+		if err != nil {
+			t.Fatal(err)
 		}
 	}
 }
