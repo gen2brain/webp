@@ -45,8 +45,7 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
             return 1;
         }
 
-        int frame = 0;
-        int timestamp, timestampPrev, duration;
+        int frame = 0, timestamp = 0, timestampPrev = 0, duration = 0;
 
         uint8_t* buf;
         int buf_size = info.canvas_width * info.canvas_height * 4;
