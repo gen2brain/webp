@@ -110,6 +110,11 @@ func TestDecodeAnimWasm(t *testing.T) {
 }
 
 func TestDecodeAnimDynamic(t *testing.T) {
+	if err := Dynamic(); err != nil {
+		fmt.Println(err)
+		t.Skip()
+	}
+
 	ret, _, err := decodeDynamic(bytes.NewReader(testWebpAnim), false, true)
 	if err != nil {
 		t.Fatal(err)
