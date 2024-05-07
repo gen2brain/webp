@@ -152,7 +152,29 @@ func TestImageDecode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = jpeg.Encode(io.Discard, img, nil)
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(w, img, nil)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestImageDecodeAnim(t *testing.T) {
+	img, _, err := image.Decode(bytes.NewReader(testWebpAnim))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w, err := writeCloser()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = jpeg.Encode(w, img, nil)
 	if err != nil {
 		t.Error(err)
 	}
@@ -160,6 +182,21 @@ func TestImageDecode(t *testing.T) {
 
 func TestDecodeConfig(t *testing.T) {
 	cfg, err := DecodeConfig(bytes.NewReader(testWebp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cfg.Width != 512 {
+		t.Errorf("width: got %d, want %d", cfg.Width, 512)
+	}
+
+	if cfg.Height != 512 {
+		t.Errorf("height: got %d, want %d", cfg.Height, 512)
+	}
+}
+
+func TestImageDecodeConfig(t *testing.T) {
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(testWebp))
 	if err != nil {
 		t.Fatal(err)
 	}
