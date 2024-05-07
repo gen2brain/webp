@@ -16,7 +16,6 @@ import (
 func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
 	var cfg image.Config
 
-	var ok bool
 	var err error
 	var data []byte
 
@@ -33,27 +32,40 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 		}
 	}
 
-	cfg.Width, cfg.Height, ok = webpGetInfo(data)
-	if !ok {
+	var wpData webpData
+	wpData.Size = uint64(len(data))
+	wpData.Bytes = &data[0]
+
+	var config webpDecoderConfig
+	if !webpInitDecoderConfig(&config) {
+		return nil, cfg, ErrDecode
+	}
+	defer webpFreeDecBuffer(&config.Output)
+
+	if !webpGetFeatures(wpData.Bytes, wpData.Size, &config.Input) {
 		return nil, cfg, ErrDecode
 	}
 
+	hasAnimation := config.Input.Animation != 0
+
+	cfg.Width = int(config.Input.Width)
+	cfg.Height = int(config.Input.Height)
+
 	cfg.ColorModel = color.NYCbCrAModel
+	if hasAnimation {
+		cfg.ColorModel = color.RGBAModel
+	}
 
 	if configOnly {
 		return nil, cfg, nil
 	}
-
-	var wpData webpData
-	wpData.Size = uint64(len(data))
-	wpData.Bytes = &data[0]
 
 	delay := make([]int, 0)
 	images := make([]image.Image, 0)
 
 	rect := image.Rect(0, 0, cfg.Width, cfg.Height)
 
-	if decodeAll {
+	if decodeAll || hasAnimation {
 		var options webpAnimDecoderOptions
 		webpAnimDecoderOptionsInit(&options)
 		options.ColorMode = modeRgbA
@@ -77,6 +89,10 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 			delay = append(delay, timestamp-timestampPrev)
 
 			timestampPrev = timestamp
+
+			if !decodeAll {
+				break
+			}
 		}
 
 		ret := &WEBP{
@@ -88,12 +104,6 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 
 		return ret, cfg, nil
 	}
-
-	var config webpDecoderConfig
-	if !webpInitDecoderConfig(&config) {
-		return nil, cfg, ErrDecode
-	}
-	defer webpFreeDecBuffer(&config.Output)
 
 	config.Output.Colorspace = modeYUVA
 	config.Options.UseThreads = 1
@@ -250,7 +260,7 @@ func init() {
 	purego.RegisterLibFunc(&_webpAnimDecoderDelete, libwebpDemux, "WebPAnimDecoderDelete")
 	purego.RegisterLibFunc(&_webpDecode, libwebp, "WebPDecode")
 	purego.RegisterLibFunc(&_webpInitDecoderConfig, libwebp, "WebPInitDecoderConfigInternal")
-	purego.RegisterLibFunc(&_webpGetInfo, libwebp, "WebPGetInfo")
+	purego.RegisterLibFunc(&_webpGetFeatures, libwebp, "WebPGetFeaturesInternal")
 	purego.RegisterLibFunc(&_webpPictureImportRGBA, libwebp, "WebPPictureImportRGBA")
 	purego.RegisterLibFunc(&_webpConfigInit, libwebp, "WebPConfigInitInternal")
 	purego.RegisterLibFunc(&_webpPictureInit, libwebp, "WebPPictureInitInternal")
@@ -276,7 +286,7 @@ var (
 	_webpAnimDecoderDelete        func(*webpAnimDecoder)
 	_webpDecode                   func(*uint8, uint64, *webpDecoderConfig) int
 	_webpInitDecoderConfig        func(*webpDecoderConfig) int
-	_webpGetInfo                  func(*uint8, uint64, *int, *int) int
+	_webpGetFeatures              func(*uint8, uint64, *webpBitstreamFeatures, int) int
 	_webpPictureImportRGBA        func(*webpPicture, *uint8, int) int
 	_webpConfigInit               func(*webpConfig, int, float32, int) int
 	_webpPictureInit              func(*webpPicture, int) int
@@ -321,13 +331,10 @@ func webpInitDecoderConfig(config *webpDecoderConfig) bool {
 	return ret == 0
 }
 
-func webpGetInfo(data []byte) (int, int, bool) {
-	var width, height int
+func webpGetFeatures(data *uint8, size uint64, features *webpBitstreamFeatures) bool {
+	ret := _webpGetFeatures(data, size, features, webpDecoderABIVersion)
 
-	ret := _webpGetInfo(&data[0], uint64(len(data)), &width, &height)
-	b := ret != 0
-
-	return width, height, b
+	return ret == 0
 }
 
 func webpPictureImportRGBA(picture *webpPicture, in *uint8, stride int) bool {

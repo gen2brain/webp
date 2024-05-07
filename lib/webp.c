@@ -5,28 +5,35 @@
 #include "webp/encode.h"
 #include "webp/demux.h"
 
-void* allocate(size_t size);
-void deallocate(void *ptr);
-
-int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out);
+int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint32_t *animation, uint8_t *delay, uint8_t *out);
 uint8_t* encode(uint8_t *rgb_in, int width, int height, size_t *size, int colorspace, int quality, int method, int lossless, int exact);
 
-int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint8_t *delay, uint8_t *out) {
-
-    if(config_only && !decode_all) {
-        if(!WebPGetInfo(webp_in, webp_in_size, (int *)width, (int *)height)) {
-            return 0;
-        }
-
-        *count = 1;
-        return 1;
-    }
+int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint32_t *animation, uint8_t *delay, uint8_t *out) {
 
     WebPData data;
     data.bytes = webp_in;
     data.size = webp_in_size;
 
-    if(decode_all) {
+    WebPDecoderConfig config;
+    if(!WebPInitDecoderConfig(&config)) {
+        return 0;
+    }
+
+    if(WebPGetFeatures(data.bytes, data.size, &config.input) != VP8_STATUS_OK) {
+        return 0;
+    }
+
+    *width = config.input.width;
+    *height = config.input.height;
+    *animation = config.input.has_animation;
+
+    if(config_only && !decode_all) {
+        *count = 1;
+
+        return 1;
+    }
+
+    if(decode_all || config.input.has_animation) {
         WebPAnimDecoderOptions options;
         WebPAnimDecoderOptionsInit(&options);
         options.color_mode = MODE_rgbA;
@@ -37,8 +44,6 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
         WebPAnimDecoderGetInfo(dec, &info);
 
         *count = info.frame_count;
-        *width = info.canvas_width;
-        *height = info.canvas_height;
 
         if(config_only) {
             WebPAnimDecoderDelete(dec);
@@ -62,16 +67,15 @@ int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, 
             memcpy(delay + sizeof(int)*frame, &duration, sizeof(int));
             timestampPrev = timestamp;
 
+            if(!decode_all) {
+                break;
+            }
+
             frame++;
         }
 
         WebPAnimDecoderDelete(dec);
         return 1;
-    }
-
-    WebPDecoderConfig config;
-    if(!WebPInitDecoderConfig(&config)) {
-        return 0;
     }
 
     int w = *width;

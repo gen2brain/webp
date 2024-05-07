@@ -19,6 +19,7 @@ var (
 const (
 	webpMaxHeaderSize     = 32
 	webpDemuxABIVersion   = 0x0107
+	webpDecoderABIVersion = 0x0209
 	webpEncoderABIVersion = 0x020f
 )
 

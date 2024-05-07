@@ -56,7 +56,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 		return nil, cfg, ErrMemWrite
 	}
 
-	res, err = _alloc.Call(ctx, 4*3)
+	res, err = _alloc.Call(ctx, 4*4)
 	if err != nil {
 		return nil, cfg, fmt.Errorf("alloc: %w", err)
 	}
@@ -65,13 +65,14 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	widthPtr := res[0]
 	heightPtr := res[0] + 4
 	countPtr := res[0] + 8
+	animPtr := res[0] + 12
 
 	all := 0
 	if decodeAll {
 		all = 1
 	}
 
-	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 1, uint64(all), widthPtr, heightPtr, countPtr, 0, 0)
+	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 1, uint64(all), widthPtr, heightPtr, countPtr, animPtr, 0, 0)
 	if err != nil {
 		return nil, cfg, fmt.Errorf("decode: %w", err)
 	}
@@ -90,9 +91,20 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 		return nil, cfg, ErrMemRead
 	}
 
+	anim, ok := mod.Memory().ReadUint32Le(uint32(animPtr))
+	if !ok {
+		return nil, cfg, ErrMemRead
+	}
+
+	hasAnimation := anim != 0
+
 	cfg.Width = int(width)
 	cfg.Height = int(height)
+
 	cfg.ColorModel = color.NYCbCrAModel
+	if hasAnimation {
+		cfg.ColorModel = color.RGBAModel
+	}
 
 	if configOnly {
 		return nil, cfg, nil
@@ -101,7 +113,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	delay := make([]int, 0)
 	images := make([]image.Image, 0)
 
-	if decodeAll {
+	if decodeAll || hasAnimation {
 		count, ok := mod.Memory().ReadUint32Le(uint32(countPtr))
 		if !ok {
 			return nil, cfg, ErrMemRead
@@ -123,7 +135,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 		delayPtr := res[0]
 		defer _free.Call(ctx, delayPtr)
 
-		res, err = _decode.Call(ctx, inPtr, uint64(inSize), 0, uint64(all), widthPtr, heightPtr, countPtr, delayPtr, outPtr)
+		res, err = _decode.Call(ctx, inPtr, uint64(inSize), 0, uint64(all), widthPtr, heightPtr, countPtr, animPtr, delayPtr, outPtr)
 		if err != nil {
 			return nil, cfg, fmt.Errorf("decode: %w", err)
 		}
@@ -178,7 +190,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	outPtr := res[0]
 	defer _free.Call(ctx, outPtr)
 
-	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 0, uint64(all), widthPtr, heightPtr, countPtr, 0, outPtr)
+	res, err = _decode.Call(ctx, inPtr, uint64(inSize), 0, uint64(all), widthPtr, heightPtr, countPtr, animPtr, 0, outPtr)
 	if err != nil {
 		return nil, cfg, fmt.Errorf("decode: %w", err)
 	}
