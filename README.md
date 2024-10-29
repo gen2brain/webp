@@ -8,6 +8,10 @@ Based on [libwebp](https://github.com/webmproject/libwebp) compiled to [WASM](ht
 
 The library will first try to use a dynamic/shared library (if installed) via [purego](https://github.com/ebitengine/purego) and will fall back to WASM.
 
+### Build tags
+
+* `nodynamic` - do not use dynamic/shared library (use only WASM)
+
 ### Benchmark
 
 ```
