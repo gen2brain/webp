@@ -9,6 +9,7 @@ import (
 	"image/png"
 	"io"
 	"os"
+	"sync"
 	"testing"
 )
 
@@ -242,6 +243,31 @@ func TestEncodeWasm(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestEncodeWasmSync(t *testing.T) {
+	wg := sync.WaitGroup{}
+	ch := make(chan bool, 2)
+
+	img, err := Decode(bytes.NewReader(testWebp))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			ch <- true
+			defer func() { <-ch; wg.Done() }()
+
+			err = encode(io.Discard, img, DefaultQuality, DefaultMethod, false, false)
+			if err != nil {
+				t.Error(err)
+			}
+		}()
+	}
+
+	wg.Wait()
 }
 
 func TestEncodeDynamic(t *testing.T) {
