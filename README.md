@@ -4,13 +4,13 @@
 
 Go encoder/decoder for [WebP Image File Format](https://en.wikipedia.org/wiki/WebP) with support for animated WebP images (decode only).
 
-Based on [libwebp](https://github.com/webmproject/libwebp) compiled to [WASM](https://en.wikipedia.org/wiki/WebAssembly) and used with [wazero](https://wazero.io/) runtime (CGo-free).
+Based on [libwebp](https://github.com/webmproject/libwebp) compiled to [WASM](https://en.wikipedia.org/wiki/WebAssembly) and transpiled to pure Go with [wasm2go](https://github.com/ncruces/wasm2go) (CGo-free).
 
-The library will first try to use a dynamic/shared library (if installed) via [purego](https://github.com/ebitengine/purego) and will fall back to WASM.
+The library will first try to use a dynamic/shared library (if installed) via [purego](https://github.com/ebitengine/purego) and will fall back to the transpiled Go.
 
 ### Build tags
 
-* `nodynamic` - do not use dynamic/shared library (use only WASM)
+* `nodynamic` - do not use dynamic/shared library (use only the transpiled Go)
 
 ### Benchmark
 
@@ -21,13 +21,13 @@ pkg: github.com/gen2brain/webp
 cpu: 11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz
 
 BenchmarkDecodeStd-8                             157	   7639585 ns/op	  473683 B/op	      13 allocs/op
-BenchmarkDecodeWasm-8                            156	   7799653 ns/op	 2614793 B/op	     316 allocs/op
+BenchmarkDecodeWasm2go-8                            156	   7799653 ns/op	 2614793 B/op	     316 allocs/op
 BenchmarkDecodeDynamic-8                         344	   3497863 ns/op	  943356 B/op	      58 allocs/op
 BenchmarkDecodeTranspiled-8 (1)                  138	   8562133 ns/op	 1335622 B/op	      52 allocs/op
 BenchmarkDecodeCGo1-8 (2)                        300	   3897300 ns/op	 1333630 B/op	      21 allocs/op
 BenchmarkDecodeCGo2-8 (3)                        314	   3801195 ns/op	 1334020 B/op	      22 allocs/op
 
-BenchmarkEncodeWasm-8                             12	  96123599 ns/op	 4857356 B/op	     298 allocs/op
+BenchmarkEncodeWasm2go-8                             12	  96123599 ns/op	 4857356 B/op	     298 allocs/op
 BenchmarkEncodeDynamic-8                          55	  19022243 ns/op	   19888 B/op	      42 allocs/op
 BenchmarkEncodeTranspiled-8 (1)                   18	  60042805 ns/op	   76104 B/op	      36 allocs/op
 BenchmarkEncodeCGo1-8 (2)                         31	  32538122 ns/op	 3213497 B/op	  524294 allocs/op

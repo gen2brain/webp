@@ -39,7 +39,7 @@ func TestDecode(t *testing.T) {
 	}
 }
 
-func TestDecodeWasm(t *testing.T) {
+func TestDecodeWasm2go(t *testing.T) {
 	img, _, err := decode(bytes.NewReader(testWebp), false, false)
 	if err != nil {
 		t.Fatal(err)
@@ -78,7 +78,7 @@ func TestDecodeDynamic(t *testing.T) {
 	}
 }
 
-func TestDecodeAnimWasm(t *testing.T) {
+func TestDecodeAnimWasm2go(t *testing.T) {
 	ret, _, err := decode(bytes.NewReader(testWebpAnim), false, true)
 	if err != nil {
 		t.Fatal(err)
@@ -228,7 +228,7 @@ func TestEncodeRGBA(t *testing.T) {
 	}
 }
 
-func TestEncodeWasm(t *testing.T) {
+func TestEncodeWasm2go(t *testing.T) {
 	img, err := Decode(bytes.NewReader(testWebp))
 	if err != nil {
 		t.Fatal(err)
@@ -245,7 +245,7 @@ func TestEncodeWasm(t *testing.T) {
 	}
 }
 
-func TestEncodeWasmSync(t *testing.T) {
+func TestEncodeWasm2goSync(t *testing.T) {
 	wg := sync.WaitGroup{}
 	ch := make(chan bool, 2)
 
@@ -292,7 +292,7 @@ func TestEncodeDynamic(t *testing.T) {
 	}
 }
 
-func BenchmarkDecodeWasm(b *testing.B) {
+func BenchmarkDecodeWasm2go(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, _, err := decode(bytes.NewReader(testWebp), false, false)
 		if err != nil {
@@ -315,7 +315,7 @@ func BenchmarkDecodeDynamic(b *testing.B) {
 	}
 }
 
-func BenchmarkEncodeWasm(b *testing.B) {
+func BenchmarkEncodeWasm2go(b *testing.B) {
 	img, err := Decode(bytes.NewReader(testWebp))
 	if err != nil {
 		b.Fatal(err)

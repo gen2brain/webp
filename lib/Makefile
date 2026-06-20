@@ -1,11 +1,11 @@
-LIBWEBP_VERSION = v1.4.0
+LIBWEBP_VERSION = v1.6.0
 
 LIBWEBP_SRC = $(PWD)/libwebp
 LIBWEBP_BUILD = $(LIBWEBP_SRC)/build
 
 WASI_SDK_PATH ?= /opt/wasi-sdk
 export CC = $(WASI_SDK_PATH)/bin/clang --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
-export CFLAGS = -msimd128
+#export CFLAGS = -msimd128
 
 CMAKE_TOOLCHAIN_FILE=$(WASI_SDK_PATH)/share/cmake/wasi-sdk.cmake
 
@@ -23,7 +23,7 @@ $(LIBWEBP_BUILD)/libwebp.a: $(LIBWEBP_SRC)
 	cmake $(LIBWEBP_SRC) \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_SHARED_LIBS=0 \
-		-DWEBP_ENABLE_SIMD_DEFAULT=1 \
+		-DWEBP_ENABLE_SIMD_DEFAULT=0 \
 		-DWEBP_BUILD_EXTRAS=0 \
 		-DWEBP_USE_THREAD=0 \
 		-DWEBP_BUILD_ANIM_UTILS=0 \
