@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/color"
 	"io"
-	"unsafe"
 )
 
 func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
@@ -200,13 +199,33 @@ func encode(w io.Writer, m image.Image, quality, method int, lossless, exact boo
 		data = i.Pix
 	case *image.NYCbCrA:
 		if img.SubsampleRatio == image.YCbCrSubsampleRatio420 {
-			length := len(img.Y) + len(img.Cb) + len(img.Cr) + len(img.A)
-			var b = struct {
-				addr *uint8
-				len  int
-				cap  int
-			}{&img.Y[0], length, length}
-			data = *(*[]byte)(unsafe.Pointer(&b))
+			cw := (width + 1) / 2
+			ch := (height + 1) / 2
+
+			// Pack the planes into the contiguous WEBP_YUV420A layout the wasm
+			// expects (Y, U, V, A with strides width/cw/cw/width), copying row by
+			// row so non-contiguous planes and strides wider than the row are
+			// handled correctly instead of reinterpreting img.Y as one big slice.
+			data = make([]byte, 2*width*height+2*cw*ch)
+
+			i0 := width * height
+			i1 := i0 + cw*ch
+			i2 := i1 + cw*ch
+
+			for y := 0; y < height; y++ {
+				yo := img.YOffset(img.Rect.Min.X, img.Rect.Min.Y+y)
+				copy(data[y*width:y*width+width], img.Y[yo:yo+width])
+
+				ao := img.AOffset(img.Rect.Min.X, img.Rect.Min.Y+y)
+				copy(data[i2+y*width:i2+y*width+width], img.A[ao:ao+width])
+			}
+
+			for y := 0; y < ch; y++ {
+				co := img.COffset(img.Rect.Min.X, img.Rect.Min.Y+2*y)
+				copy(data[i0+y*cw:i0+y*cw+cw], img.Cb[co:co+cw])
+				copy(data[i1+y*cw:i1+y*cw+cw], img.Cr[co:co+cw])
+			}
+
 			colorspace = 4 // WEBP_YUV420A
 		} else {
 			i := imageToNRGBA(img)

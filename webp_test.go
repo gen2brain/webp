@@ -245,6 +245,62 @@ func TestEncodeWasm2go(t *testing.T) {
 	}
 }
 
+// TestEncodeNYCbCrAStrided guards against the fast-path encoder corrupting
+// *image.NYCbCrA whose planes are not a single contiguous backing array or whose
+// strides exceed the row width (e.g. images from other decoders). The same pixels
+// laid out contiguously and with padded, independently-allocated planes must
+// encode identically.
+func TestEncodeNYCbCrAStrided(t *testing.T) {
+	ret, _, err := decode(bytes.NewReader(testWebp), false, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	src, ok := ret.Image[0].(*image.NYCbCrA)
+	if !ok {
+		t.Skipf("decoded image is %T, not *image.NYCbCrA", ret.Image[0])
+	}
+
+	w, h := src.Rect.Dx(), src.Rect.Dy()
+	cw, ch := (w+1)/2, (h+1)/2
+	ys, cs := w+13, cw+5
+
+	strided := &image.NYCbCrA{
+		YCbCr: image.YCbCr{
+			Y:              make([]byte, ys*h),
+			Cb:             make([]byte, cs*ch),
+			Cr:             make([]byte, cs*ch),
+			YStride:        ys,
+			CStride:        cs,
+			SubsampleRatio: image.YCbCrSubsampleRatio420,
+			Rect:           image.Rect(0, 0, w, h),
+		},
+		A:       make([]byte, ys*h),
+		AStride: ys,
+	}
+
+	for y := 0; y < h; y++ {
+		copy(strided.Y[y*ys:y*ys+w], src.Y[y*src.YStride:y*src.YStride+w])
+		copy(strided.A[y*ys:y*ys+w], src.A[y*src.AStride:y*src.AStride+w])
+	}
+	for y := 0; y < ch; y++ {
+		copy(strided.Cb[y*cs:y*cs+cw], src.Cb[y*src.CStride:y*src.CStride+cw])
+		copy(strided.Cr[y*cs:y*cs+cw], src.Cr[y*src.CStride:y*src.CStride+cw])
+	}
+
+	var contiguous, padded bytes.Buffer
+	if err := encode(&contiguous, src, 100, DefaultMethod, true, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := encode(&padded, strided, 100, DefaultMethod, true, false); err != nil {
+		t.Fatal(err)
+	}
+
+	if !bytes.Equal(contiguous.Bytes(), padded.Bytes()) {
+		t.Errorf("strided NYCbCrA encoded differently from contiguous: %d vs %d bytes", contiguous.Len(), padded.Len())
+	}
+}
+
 func TestEncodeWasm2goSync(t *testing.T) {
 	wg := sync.WaitGroup{}
 	ch := make(chan bool, 2)
