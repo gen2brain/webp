@@ -211,6 +211,32 @@ func TestImageDecodeConfig(t *testing.T) {
 	}
 }
 
+// smallChunkReader wraps an io.Reader and limits Read calls to small chunks,
+// simulating what an io.Reader passed to DecodeConfig might legitimately do.
+// (The io.Reader contract allows this.)
+type smallChunkReader struct{ io.Reader }
+
+func (r smallChunkReader) Read(p []byte) (int, error) {
+	const chunkSize = 8
+	if len(p) > chunkSize {
+		p = p[:chunkSize]
+	}
+	return r.Reader.Read(p)
+}
+
+func TestDecodeConfigSmallChunks(t *testing.T) {
+	cfg, err := DecodeConfig(smallChunkReader{bytes.NewReader(testWebp)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g, w := cfg.Width, 512; g != w {
+		t.Fatalf("invalid width: got %d, want %d", g, w)
+	}
+	if g, h := cfg.Height, 512; g != h {
+		t.Fatalf("invalid height: got %d, want %d", g, h)
+	}
+}
+
 func TestEncodeRGBA(t *testing.T) {
 	img, err := png.Decode(bytes.NewReader(testPng))
 	if err != nil {

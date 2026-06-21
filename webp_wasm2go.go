@@ -16,8 +16,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	mod.X_initialize()
 
 	if configOnly {
-		data = make([]byte, webpMaxHeaderSize)
-		_, err = r.Read(data)
+		data, err = io.ReadAll(io.LimitReader(r, webpMaxHeaderSize))
 		if err != nil {
 			return nil, cfg, fmt.Errorf("read: %w", err)
 		}

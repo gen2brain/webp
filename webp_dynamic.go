@@ -20,8 +20,7 @@ func decodeDynamic(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config
 	var data []byte
 
 	if configOnly {
-		data = make([]byte, webpMaxHeaderSize)
-		_, err = r.Read(data)
+		data, err = io.ReadAll(io.LimitReader(r, webpMaxHeaderSize))
 		if err != nil {
 			return nil, cfg, err
 		}
