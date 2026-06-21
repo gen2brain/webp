@@ -1,6 +1,8 @@
 // Package webp implements an WEBP image decoder based on libwebp compiled to WASM.
 package webp
 
+//go:generate wasm2go -pkg webp -unsafe -o libwebp.go lib/webp.wasm
+
 import (
 	"errors"
 	"image"
