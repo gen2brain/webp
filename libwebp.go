@@ -10,7 +10,7 @@ import (
 	"unsafe"
 )
 
-type Module struct {
+type module struct {
 	t0       []any
 	elements [][]any
 	memory   []byte
@@ -18,8 +18,8 @@ type Module struct {
 	g0       int32
 }
 
-func New() *Module {
-	m := new(Module)
+func newModule() *module {
+	m := new(module)
 	m.t0 = make([]any, 227)
 	m.maxMem = 65536
 	m.memory = make([]byte, 0x20000)
@@ -32,7 +32,7 @@ func New() *Module {
 	return m
 }
 
-type Memory = interface {
+type memory = interface {
 	Slice() *[]byte
 	Grow(delta, max int64) int64
 }
@@ -44,7 +44,7 @@ func (m *wasmMemory) Slice() *[]byte {
 func (m *wasmMemory) Grow(delta, max int64) int64 {
 	return memory_grow((*[]byte)(m), delta, max)
 }
-func (m *Module) X_initialize() {
+func (m *module) X_initialize() {
 	t0 := int32(load32(m.memory[uint32(i32(106368)):]))
 	if t0 != 0 {
 		panic("unreachable")
@@ -60,7 +60,7 @@ func (m *Module) X_initialize() {
 	store32(m.memory[uint32(i32(115064)):], uint32(t1))
 	store32(m.memory[uint32(i32(106360)):], uint32(i32(65536)))
 }
-func (m *Module) Xdecode(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9 int32) int32 {
+func (m *module) Xdecode(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9 int32) int32 {
 	var v10 int32
 	var v11 int32
 	var v12 int32
@@ -613,7 +613,7 @@ l0:
 	m.g0 = v10 + i32(288)
 	return v11
 }
-func (m *Module) Xencode(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
+func (m *module) Xencode(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -7093,7 +7093,7 @@ l0:
 	m.g0 = v22 + i32(304)
 	return v77
 }
-func (m *Module) fn3(v0, v1, v2 int32) {
+func (m *module) fn3(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -7131,7 +7131,7 @@ func (m *Module) fn3(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn4(v0, v1, v2 int32) {
+func (m *module) fn4(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	if v2 > i32(0) {
@@ -7157,7 +7157,7 @@ func (m *Module) fn4(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn5(v0 int32) {
+func (m *module) fn5(v0 int32) {
 	if v0 != 0 {
 		t0 := int32(load32(m.memory[uint32(v0):]))
 		m.fn9(t0)
@@ -7168,7 +7168,7 @@ func (m *Module) fn5(v0 int32) {
 		m.fn408(v0)
 	}
 }
-func (m *Module) fn6(v0, v1, v2 int32) int32 {
+func (m *module) fn6(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -7665,7 +7665,7 @@ l0:
 	m.g0 = v3 - i32(-64)
 	return v21
 }
-func (m *Module) fn7(v0 int32) int32 {
+func (m *module) fn7(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -7764,7 +7764,7 @@ func (m *Module) fn7(v0 int32) int32 {
 l0:
 	return v2
 }
-func (m *Module) fn8(v0 int32) int32 {
+func (m *module) fn8(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -8190,7 +8190,7 @@ func (m *Module) fn8(v0 int32) int32 {
 l0:
 	return v4
 }
-func (m *Module) fn9(v0 int32) {
+func (m *module) fn9(v0 int32) {
 	var v1 int32
 	var _ int32
 	if v0 != 0 {
@@ -8223,7 +8223,7 @@ func (m *Module) fn9(v0 int32) {
 		m.fn408(v0)
 	}
 }
-func (m *Module) fn10(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn10(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -8393,7 +8393,7 @@ l0:
 	m.g0 = v9 + i32(48)
 	return v4
 }
-func (m *Module) fn11(v0 int32) int32 {
+func (m *module) fn11(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+20:]))
@@ -8437,7 +8437,7 @@ func (m *Module) fn11(v0 int32) int32 {
 l0:
 	return v1
 }
-func (m *Module) fn12(v0 int32) int32 {
+func (m *module) fn12(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -8635,7 +8635,7 @@ l0:
 l1:
 	return i32(0)
 }
-func (m *Module) fn13(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn13(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -8920,7 +8920,7 @@ l0:
 	m.g0 = v7 + i32(16)
 	return v6
 }
-func (m *Module) fn14(v0 int32) int32 {
+func (m *module) fn14(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -9083,7 +9083,7 @@ func (m *Module) fn14(v0 int32) int32 {
 l0:
 	return v7
 }
-func (m *Module) fn15(v0 int32) {
+func (m *module) fn15(v0 int32) {
 	if v0 != 0 {
 		t0 := int32(load32(m.memory[int64(uint32(v0))+12:]))
 		if t0 <= i32(0) {
@@ -9093,7 +9093,7 @@ func (m *Module) fn15(v0 int32) {
 		store32(m.memory[int64(uint32(v0))+80:], uint32(i32(0)))
 	}
 }
-func (m *Module) fn16(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn16(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -9314,13 +9314,13 @@ l10:
 	m.g0 = v8 + i32(96)
 	return v4
 }
-func (m *Module) fn17(v0 int32) {
+func (m *module) fn17(v0 int32) {
 	if v0 != 0 {
 		m.fn18(v0)
 		m.fn408(v0)
 	}
 }
-func (m *Module) fn18(v0 int32) {
+func (m *module) fn18(v0 int32) {
 	var v1 int32
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+160:]))
@@ -9357,7 +9357,7 @@ func (m *Module) fn18(v0 int32) {
 	store32(m.memory[int64(uint32(v0))+12:], uint32(i32(0)))
 	store32(m.memory[int64(uint32(v0))+280:], uint32(i32(0)))
 }
-func (m *Module) fn19(v0, v1, v2, v3, v4 int32) int32 {
+func (m *module) fn19(v0, v1, v2, v3, v4 int32) int32 {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -10467,7 +10467,7 @@ l38:
 	m.g0 = v20 + i32(16)
 	return v9
 }
-func (m *Module) fn20(v0, v1, v2, v3, v4, v5 int32) int32 {
+func (m *module) fn20(v0, v1, v2, v3, v4, v5 int32) int32 {
 	var v6 int32
 	var v7 int32
 	var v8 int64
@@ -11235,7 +11235,7 @@ l30:
 l29:
 	return v9
 }
-func (m *Module) fn21(v0, v1 int32) {
+func (m *module) fn21(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -11373,7 +11373,7 @@ func (m *Module) fn21(v0, v1 int32) {
 	store32(m.memory[int64(uint32(v0))+108:], uint32(v1))
 	store32(m.memory[int64(uint32(v0))+116:], uint32(v1))
 }
-func (m *Module) fn22(v0, v1 int32) {
+func (m *module) fn22(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -11719,14 +11719,14 @@ func (m *Module) fn22(v0, v1 int32) {
 l0:
 	store32(m.memory[int64(uint32(v0))+108:], uint32(v1))
 }
-func (m *Module) fn23(v0 int32) {
+func (m *module) fn23(v0 int32) {
 	t0 := int32(load32(m.memory[int64(uint32(v0))+40:]))
 	v0 = t0
 	t1 := int32(load32(m.memory[int64(uint32(v0))+40:]))
 	m.fn408(t1)
 	store32(m.memory[int64(uint32(v0))+40:], uint32(i32(0)))
 }
-func (m *Module) fn24(v0 int32) int32 {
+func (m *module) fn24(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -12121,7 +12121,7 @@ l1:
 l2:
 	return v6
 }
-func (m *Module) fn25(v0 int32) int32 {
+func (m *module) fn25(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -12152,7 +12152,7 @@ func (m *Module) fn25(v0 int32) int32 {
 l0:
 	return v1
 }
-func (m *Module) fn26(v0, v1 int32) int32 {
+func (m *module) fn26(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -12280,7 +12280,7 @@ l2:
 	}
 	return v9
 }
-func (m *Module) fn27(v0, v1, v2 int32) int32 {
+func (m *module) fn27(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -12323,7 +12323,7 @@ func (m *Module) fn27(v0, v1, v2 int32) int32 {
 l0:
 	return i32(0)
 }
-func (m *Module) fn28(v0, v1, v2 int32) int32 {
+func (m *module) fn28(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -12459,7 +12459,7 @@ func (m *Module) fn28(v0, v1, v2 int32) int32 {
 l0:
 	return v4
 }
-func (m *Module) fn29(v0, v1, v2 int32) int32 {
+func (m *module) fn29(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -12556,7 +12556,7 @@ func (m *Module) fn29(v0, v1, v2 int32) int32 {
 l0:
 	return v3
 }
-func (m *Module) fn30(v0, v1 int32) int32 {
+func (m *module) fn30(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -12666,7 +12666,7 @@ l1:
 	}
 	return v7
 }
-func (m *Module) fn31(v0, v1, v2 int32) int32 {
+func (m *module) fn31(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -12802,7 +12802,7 @@ func (m *Module) fn31(v0, v1, v2 int32) int32 {
 l0:
 	return i32(0)
 }
-func (m *Module) fn32(v0, v1 int32) int32 {
+func (m *module) fn32(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -12881,7 +12881,7 @@ l0:
 	t19 := int32(load32(m.memory[int64(uint32(v0))+16:]))
 	return t19
 }
-func (m *Module) fn33(v0, v1 int32) int32 {
+func (m *module) fn33(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -12994,7 +12994,7 @@ l0:
 	}
 	return v10
 }
-func (m *Module) fn34(v0, v1 int32) int32 {
+func (m *module) fn34(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -13046,7 +13046,7 @@ func (m *Module) fn34(v0, v1 int32) int32 {
 	t26 := int32(load32(m.memory[int64(uint32(v0))+16:]))
 	return t26
 }
-func (m *Module) fn35(v0, v1, v2 int32) int32 {
+func (m *module) fn35(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -13186,7 +13186,7 @@ func (m *Module) fn35(v0, v1, v2 int32) int32 {
 l0:
 	return i32(0)
 }
-func (m *Module) fn36(v0, v1, v2 int32) int32 {
+func (m *module) fn36(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -13325,7 +13325,7 @@ func (m *Module) fn36(v0, v1, v2 int32) int32 {
 l0:
 	return i32(0)
 }
-func (m *Module) fn37(v0, v1, v2 int32) int32 {
+func (m *module) fn37(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -13416,7 +13416,7 @@ func (m *Module) fn37(v0, v1, v2 int32) int32 {
 l0:
 	return i32(0)
 }
-func (m *Module) fn38(v0 int32) {
+func (m *module) fn38(v0 int32) {
 	var v1 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+2404:]))
 	m.fn408(t0)
@@ -13431,7 +13431,7 @@ func (m *Module) fn38(v0 int32) {
 	}
 	store32(m.memory[int64(uint32(v0))+2388:], uint32(i32(0)))
 }
-func (m *Module) fn39(v0, v1 int32) {
+func (m *module) fn39(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -14081,7 +14081,7 @@ l0:
 		}
 	}
 }
-func (m *Module) fn40(v0, v1 int32) int32 {
+func (m *module) fn40(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -16323,7 +16323,7 @@ l85:
 	m.g0 = v31 - i32(-64)
 	return v3
 }
-func (m *Module) fn41(v0, v1, v2, v3, v4, v5 int32) int32 {
+func (m *module) fn41(v0, v1, v2, v3, v4, v5 int32) int32 {
 	var v6 int64
 	var v7 int32
 	var v8 int32
@@ -16608,7 +16608,7 @@ func (m *Module) fn41(v0, v1, v2, v3, v4, v5 int32) int32 {
 l1:
 	return v4
 }
-func (m *Module) fn42(v0, v1, v2, v3, v4, v5 int32) int32 {
+func (m *module) fn42(v0, v1, v2, v3, v4, v5 int32) int32 {
 	var v6 int64
 	var v7 int32
 	var v8 int32
@@ -16884,7 +16884,7 @@ func (m *Module) fn42(v0, v1, v2, v3, v4, v5 int32) int32 {
 l2:
 	return v4
 }
-func (m *Module) fn43(v0, v1 int32) int32 {
+func (m *module) fn43(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -18083,7 +18083,7 @@ l1:
 l0:
 	return i32(0)
 }
-func (m *Module) fn44(v0, v1 int32) int32 {
+func (m *module) fn44(v0, v1 int32) int32 {
 	var v2 int64
 	var v3 int32
 	var v4 int32
@@ -18741,7 +18741,7 @@ l7:
 	store32(m.memory[int64(uint32(v0))+8:], uint32(i32_shl(v1, v3)-i32(1)))
 	return v4
 }
-func (m *Module) fn45(v0, v1, v2, v3, v4, v5, v6, v7 int32) int32 {
+func (m *module) fn45(v0, v1, v2, v3, v4, v5, v6, v7 int32) int32 {
 	var v8 int32
 	var v9 int32
 	var v10 int32
@@ -19359,7 +19359,7 @@ l0:
 	m.g0 = v8 - i32(-64)
 	return v9
 }
-func (m *Module) fn46(v0, v1, v2 int32) int32 {
+func (m *module) fn46(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -23979,7 +23979,7 @@ l2:
 	m.g0 = v14 + i32(160)
 	return v1
 }
-func (m *Module) fn47(v0 int32) int32 {
+func (m *module) fn47(v0 int32) int32 {
 	var p0 int32
 	if v0 != 0 {
 		memory_zero(m.memory, uint32(v0), uint32(i32(200)))
@@ -24001,7 +24001,7 @@ func (m *Module) fn47(v0 int32) int32 {
 	}
 	return p0
 }
-func (m *Module) fn48(v0, v1, v2 int32) int32 {
+func (m *module) fn48(v0, v1, v2 int32) int32 {
 	var v3 int32
 	v3 = i32(2)
 	{
@@ -24022,7 +24022,7 @@ func (m *Module) fn48(v0, v1, v2 int32) int32 {
 l0:
 	return v3
 }
-func (m *Module) fn49(v0, v1, v2 int32) int32 {
+func (m *module) fn49(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -24206,7 +24206,7 @@ l0:
 	m.g0 = v4 + i32(144)
 	return v6
 }
-func (m *Module) fn50(v0, v1, v2 int32) int32 {
+func (m *module) fn50(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -24384,7 +24384,7 @@ l1:
 	m.g0 = v5 + i32(16)
 	return v11
 }
-func (m *Module) fn51(v0, v1, v2 int32) {
+func (m *module) fn51(v0, v1, v2 int32) {
 	var v3 int32
 	if v1 <= i32(0) {
 		return
@@ -24440,7 +24440,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn52(v0, v1, v2, v3 int32) {
+func (m *module) fn52(v0, v1, v2, v3 int32) {
 	if v2 <= i32(0) {
 		return
 	}
@@ -24491,7 +24491,7 @@ l3:
 		goto l4
 	}
 }
-func (m *Module) fn53(v0, v1, v2, v3 int32) {
+func (m *module) fn53(v0, v1, v2, v3 int32) {
 	var v4 int32
 	if v3 <= i32(0) {
 		return
@@ -24533,7 +24533,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn54(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn54(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var _ int32
 	{
 		if v5 <= i32(0) {
@@ -24566,7 +24566,7 @@ func (m *Module) fn54(v0, v1, v2, v3, v4, v5, v6 int32) {
 		m.t0[uint(t4)].(func(int32, int32, int32, int32))(v0, v2, v4, v6)
 	}
 }
-func (m *Module) fn55() {
+func (m *module) fn55() {
 	var v0 int32
 	t0 := int32(load32(m.memory[uint32(i32(106424)):]))
 	v0 = t0
@@ -24587,7 +24587,7 @@ func (m *Module) fn55() {
 		store32(m.memory[uint32(i32(106240)):], uint32(v0))
 	}
 }
-func (m *Module) fn56(v0, v1, v2, v3 int32) {
+func (m *module) fn56(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -24634,7 +24634,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn57(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn57(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	if v3 > i32(0) {
 	l0:
@@ -24652,7 +24652,7 @@ func (m *Module) fn57(v0, v1, v2, v3, v4, v5 int32) {
 		}
 	}
 }
-func (m *Module) fn58(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn58(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -24721,7 +24721,7 @@ func (m *Module) fn58(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn59(v0, v1, v2, v3, v4, v5 int32) int32 {
+func (m *module) fn59(v0, v1, v2, v3, v4, v5 int32) int32 {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -24818,7 +24818,7 @@ func (m *Module) fn59(v0, v1, v2, v3, v4, v5 int32) int32 {
 l0:
 	return v7
 }
-func (m *Module) fn60(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn60(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -24890,7 +24890,7 @@ func (m *Module) fn60(v0, v1, v2, v3, v4, v5 int32) {
 		}
 	}
 }
-func (m *Module) fn61(v0, v1, v2, v3, v4, v5 int32) int32 {
+func (m *module) fn61(v0, v1, v2, v3, v4, v5 int32) int32 {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -24988,7 +24988,7 @@ func (m *Module) fn61(v0, v1, v2, v3, v4, v5 int32) int32 {
 l0:
 	return v7
 }
-func (m *Module) fn62(v0, v1, v2 int32) {
+func (m *module) fn62(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -25036,7 +25036,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn63(v0, v1 int32) int32 {
+func (m *module) fn63(v0, v1 int32) int32 {
 	var _ int32
 l0:
 	{
@@ -25052,7 +25052,7 @@ l0:
 	}
 	return i32(1)
 }
-func (m *Module) fn64(v0, v1 int32) int32 {
+func (m *module) fn64(v0, v1 int32) int32 {
 	var v2 int32
 	if v1 <= i32(0) {
 		goto l0
@@ -25074,7 +25074,7 @@ l1:
 l0:
 	return v2
 }
-func (m *Module) fn65(v0, v1, v2 int32) {
+func (m *module) fn65(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -25132,7 +25132,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn66() {
+func (m *module) fn66() {
 	t0 := int32(load32(m.memory[uint32(i32(106244)):]))
 	t1 := int32(load32(m.memory[uint32(i32(106424)):]))
 	if t0 != t1 {
@@ -25183,13 +25183,13 @@ func (m *Module) fn66() {
 		store32(m.memory[uint32(i32(106244)):], uint32(t2))
 	}
 }
-func (m *Module) fn67(v0, v1, v2 int32) {
+func (m *module) fn67(v0, v1, v2 int32) {
 	m.fn110(v0, v1)
 	if v2 != 0 {
 		m.fn110(v0+i32(32), v1+i32(4))
 	}
 }
-func (m *Module) fn68(v0, v1 int32) {
+func (m *module) fn68(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -25356,7 +25356,7 @@ func (m *Module) fn68(v0, v1 int32) {
 	store16(m.memory[int64(uint32(v1))+32:], uint16(int32(uint32(v4+v7)>>3)))
 	store16(m.memory[uint32(v1):], uint16(int32(uint32(v0+v3)>>3)))
 }
-func (m *Module) fn69(v0, v1 int32) {
+func (m *module) fn69(v0, v1 int32) {
 	var v2 int32
 	t0 := int32(int16(load16(m.memory[uint32(v0):])))
 	t1 := v1
@@ -25569,7 +25569,7 @@ func (m *Module) fn69(v0, v1 int32) {
 	}
 	m.memory[int64(uint32(t62))+99] = byte(p64)
 }
-func (m *Module) fn70(v0, v1 int32) {
+func (m *module) fn70(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -25803,13 +25803,13 @@ func (m *Module) fn70(v0, v1 int32) {
 	}
 	m.memory[int64(uint32(t68))+99] = byte(p70)
 }
-func (m *Module) fn71(v0, v1 int32) {
+func (m *module) fn71(v0, v1 int32) {
 	t0 := int32(load32(m.memory[uint32(i32(106540)):]))
 	m.t0[uint(t0)].(func(int32, int32, int32))(v0, v1, i32(1))
 	t1 := int32(load32(m.memory[uint32(i32(106540)):]))
 	m.t0[uint(t1)].(func(int32, int32, int32))(v0-i32(-64), v1+i32(128), i32(1))
 }
-func (m *Module) fn72(v0, v1 int32) {
+func (m *module) fn72(v0, v1 int32) {
 	t0 := int32(load16(m.memory[uint32(v0):]))
 	if t0 != 0 {
 		t1 := int32(load32(m.memory[uint32(i32(106552)):]))
@@ -25831,10 +25831,10 @@ func (m *Module) fn72(v0, v1 int32) {
 		m.t0[uint(t7)].(func(int32, int32))(v0+i32(96), v1+i32(132))
 	}
 }
-func (m *Module) fn73(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn73(v0, v1, v2, v3, v4 int32) {
 	m.fn111(v0, v1, i32(1), i32(16), v2, v3, v4)
 }
-func (m *Module) fn74(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn74(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	t0 := v0
 	v5 = v1 << 2
@@ -25844,21 +25844,21 @@ func (m *Module) fn74(v0, v1, v2, v3, v4 int32) {
 	m.fn112(v0, v1, i32(1), i32(16), v2, v3, v4)
 	m.fn112(v0+v5, v1, i32(1), i32(16), v2, v3, v4)
 }
-func (m *Module) fn75(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn75(v0, v1, v2, v3, v4 int32) {
 	m.fn111(v0, i32(1), v1, i32(16), v2, v3, v4)
 }
-func (m *Module) fn76(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn76(v0, v1, v2, v3, v4, v5 int32) {
 	m.fn111(v0, v2, i32(1), i32(8), v3, v4, v5)
 	m.fn111(v1, v2, i32(1), i32(8), v3, v4, v5)
 }
-func (m *Module) fn77(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn77(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	t0 := v0
 	v6 = v2 << 2
 	m.fn112(t0+v6, v2, i32(1), i32(8), v3, v4, v5)
 	m.fn112(v1+v6, v2, i32(1), i32(8), v3, v4, v5)
 }
-func (m *Module) fn78(v0, v1, v2 int32) {
+func (m *module) fn78(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -25920,7 +25920,7 @@ l0:
 		}
 	}
 }
-func (m *Module) fn79(v0, v1, v2 int32) {
+func (m *module) fn79(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -25979,7 +25979,7 @@ l0:
 		}
 	}
 }
-func (m *Module) fn80(v0, v1, v2 int32) {
+func (m *module) fn80(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -26125,7 +26125,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn81(v0, v1, v2 int32) {
+func (m *module) fn81(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -26259,20 +26259,20 @@ l2:
 		}
 	}
 }
-func (m *Module) fn82(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn82(v0, v1, v2, v3, v4 int32) {
 	m.fn112(v0+i32(4), i32(1), v1, i32(16), v2, v3, v4)
 	m.fn112(v0+i32(8), i32(1), v1, i32(16), v2, v3, v4)
 	m.fn112(v0+i32(12), i32(1), v1, i32(16), v2, v3, v4)
 }
-func (m *Module) fn83(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn83(v0, v1, v2, v3, v4, v5 int32) {
 	m.fn111(v0, i32(1), v2, i32(8), v3, v4, v5)
 	m.fn111(v1, i32(1), v2, i32(8), v3, v4, v5)
 }
-func (m *Module) fn84(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn84(v0, v1, v2, v3, v4, v5 int32) {
 	m.fn112(v0+i32(4), i32(1), v2, i32(8), v3, v4, v5)
 	m.fn112(v1+i32(4), i32(1), v2, i32(8), v3, v4, v5)
 }
-func (m *Module) fn85(v0 int32) {
+func (m *module) fn85(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26325,7 +26325,7 @@ func (m *Module) fn85(v0 int32) {
 	m.memory[int64(uint32(v0))+99] = byte(int32(uint32(v1+v2+v1<<1+i32(2)) >> 2))
 	m.memory[int64(uint32(v0))+67] = byte(v4)
 }
-func (m *Module) fn86(v0 int32) {
+func (m *module) fn86(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26382,7 +26382,7 @@ func (m *Module) fn86(v0 int32) {
 	m.memory[int64(uint32(v0))+2] = byte(v2)
 	m.memory[int64(uint32(v0))+3] = byte(int32(uint32(v4+v5+v1<<1+i32(2)) >> 2))
 }
-func (m *Module) fn87(v0 int32) {
+func (m *module) fn87(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26429,7 +26429,7 @@ func (m *Module) fn87(v0 int32) {
 	m.memory[int64(uint32(v0))+1] = byte(v3)
 	m.memory[uint32(v0)] = byte(v1)
 }
-func (m *Module) fn88(v0 int32) {
+func (m *module) fn88(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26502,7 +26502,7 @@ func (m *Module) fn88(v0 int32) {
 	t39 := int32(m.memory[uint32(v2+v6)])
 	m.memory[int64(uint32(v0))+99] = byte(t39)
 }
-func (m *Module) fn89(v0 int32) {
+func (m *module) fn89(v0 int32) {
 	var v1 int32
 	t0 := int32(m.memory[uint32(v0+i32(95))])
 	t1 := int32(m.memory[uint32(v0-i32(29))])
@@ -26519,7 +26519,7 @@ func (m *Module) fn89(v0 int32) {
 	store32(m.memory[uint32(v0+i32(32)):], uint32(v1))
 	store32(m.memory[uint32(v0):], uint32(v1))
 }
-func (m *Module) fn90(v0 int32) {
+func (m *module) fn90(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26565,7 +26565,7 @@ func (m *Module) fn90(v0 int32) {
 	m.memory[int64(uint32(v0))+67] = byte(v1)
 	m.memory[int64(uint32(v0))+66] = byte(v1)
 }
-func (m *Module) fn91(v0 int32) {
+func (m *module) fn91(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26629,7 +26629,7 @@ func (m *Module) fn91(v0 int32) {
 	m.memory[int64(uint32(v0))+97] = byte(int32(uint32(v2+v7+v4<<1) >> 2))
 	m.memory[int64(uint32(v0))+65] = byte(v3)
 }
-func (m *Module) fn92(v0 int32) {
+func (m *module) fn92(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26692,7 +26692,7 @@ func (m *Module) fn92(v0 int32) {
 	m.memory[int64(uint32(v0))+67] = byte(int32(uint32(v2+(v3+v1<<1)+i32(2)) >> 2))
 	m.memory[int64(uint32(v0))+35] = byte(v5)
 }
-func (m *Module) fn93(v0 int32) {
+func (m *module) fn93(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26756,7 +26756,7 @@ func (m *Module) fn93(v0 int32) {
 	m.memory[int64(uint32(v0))+35] = byte(int32(uint32(v5+(v4+v3<<1)+i32(2)) >> 2))
 	m.memory[int64(uint32(v0))+34] = byte(v1)
 }
-func (m *Module) fn94(v0 int32) {
+func (m *module) fn94(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26784,7 +26784,7 @@ func (m *Module) fn94(v0 int32) {
 	t10 := int32(m.memory[uint32(v0-i32(33))])
 	store32(m.memory[uint32(v0):], uint32(int32(uint32(v5+t10+v1<<1)>>2)*i32(16843009)))
 }
-func (m *Module) fn95(v0 int32) {
+func (m *module) fn95(v0 int32) {
 	var v1 int64
 	t0 := int32(m.memory[uint32(v0-i32(17))])
 	t1 := int32(m.memory[uint32(v0+i32(479))])
@@ -26853,7 +26853,7 @@ func (m *Module) fn95(v0 int32) {
 	store64(m.memory[uint32(v0+i32(480)):], uint64(v1))
 	store64(m.memory[uint32(v0+i32(488)):], uint64(v1))
 }
-func (m *Module) fn96(v0 int32) {
+func (m *module) fn96(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -26953,7 +26953,7 @@ l0:
 		}
 	}
 }
-func (m *Module) fn97(v0 int32) {
+func (m *module) fn97(v0 int32) {
 	var v1 int64
 	var v2 int64
 	var v3 int32
@@ -27003,7 +27003,7 @@ func (m *Module) fn97(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+488:], uint64(v1))
 	store64(m.memory[int64(uint32(v0))+480:], uint64(v2))
 }
-func (m *Module) fn98(v0 int32) {
+func (m *module) fn98(v0 int32) {
 	var v1 int64
 	t0 := int64(m.memory[int64(uint32(v0))+31])
 	t1 := v0
@@ -27086,7 +27086,7 @@ func (m *Module) fn98(v0 int32) {
 	store64(m.memory[int64(uint32(t31))+488:], uint64(v1))
 	store64(m.memory[int64(uint32(v0))+480:], uint64(v1))
 }
-func (m *Module) fn99(v0 int32) {
+func (m *module) fn99(v0 int32) {
 	var v1 int64
 	t0 := int32(m.memory[uint32(v0+i32(479))])
 	t1 := int32(m.memory[uint32(v0+i32(447))])
@@ -27139,7 +27139,7 @@ func (m *Module) fn99(v0 int32) {
 	store64(m.memory[uint32(v0+i32(488)):], uint64(v1))
 	store64(m.memory[uint32(v0+i32(480)):], uint64(v1))
 }
-func (m *Module) fn100(v0 int32) {
+func (m *module) fn100(v0 int32) {
 	var v1 int64
 	t0 := int32(m.memory[uint32(v0-i32(17))])
 	t1 := int32(m.memory[uint32(v0-i32(18))])
@@ -27192,7 +27192,7 @@ func (m *Module) fn100(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+488:], uint64(v1))
 	store64(m.memory[int64(uint32(v0))+480:], uint64(v1))
 }
-func (m *Module) fn101(v0 int32) {
+func (m *module) fn101(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+8:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 	store64(m.memory[uint32(v0):], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 	store64(m.memory[int64(uint32(v0))+32:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
@@ -27226,7 +27226,7 @@ func (m *Module) fn101(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+488:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 	store64(m.memory[int64(uint32(v0))+480:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 }
-func (m *Module) fn102(v0 int32) {
+func (m *module) fn102(v0 int32) {
 	var v1 int64
 	t0 := int32(m.memory[uint32(v0+i32(223))])
 	t1 := int32(m.memory[uint32(v0-i32(25))])
@@ -27255,7 +27255,7 @@ func (m *Module) fn102(v0 int32) {
 	store64(m.memory[uint32(v0+i32(32)):], uint64(v1))
 	store64(m.memory[uint32(v0):], uint64(v1))
 }
-func (m *Module) fn103(v0 int32) {
+func (m *module) fn103(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -27536,7 +27536,7 @@ func (m *Module) fn103(v0 int32) {
 	t155 := int32(m.memory[uint32(v2+v6)])
 	m.memory[int64(uint32(v0))+231] = byte(t155)
 }
-func (m *Module) fn104(v0 int32) {
+func (m *module) fn104(v0 int32) {
 	var v1 int64
 	t0 := int64(load64(m.memory[uint32(v0-i32(32)):]))
 	t1 := v0
@@ -27550,7 +27550,7 @@ func (m *Module) fn104(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+32:], uint64(v1))
 	store64(m.memory[uint32(v0):], uint64(v1))
 }
-func (m *Module) fn105(v0 int32) {
+func (m *module) fn105(v0 int32) {
 	t0 := int64(m.memory[int64(uint32(v0))+31])
 	store64(m.memory[int64(uint32(v0))+32:], uint64(t0*i64(72340172838076673)))
 	t1 := int64(m.memory[int64(uint32(v0))+63])
@@ -27568,7 +27568,7 @@ func (m *Module) fn105(v0 int32) {
 	t7 := int64(m.memory[uint32(v0-i32(1))])
 	store64(m.memory[uint32(v0):], uint64(t7*i64(72340172838076673)))
 }
-func (m *Module) fn106(v0 int32) {
+func (m *module) fn106(v0 int32) {
 	var v1 int64
 	t0 := int32(m.memory[uint32(v0+i32(223))])
 	t1 := int32(m.memory[uint32(v0+i32(191))])
@@ -27589,7 +27589,7 @@ func (m *Module) fn106(v0 int32) {
 	store64(m.memory[uint32(v0+i32(32)):], uint64(v1))
 	store64(m.memory[uint32(v0):], uint64(v1))
 }
-func (m *Module) fn107(v0 int32) {
+func (m *module) fn107(v0 int32) {
 	var v1 int64
 	t0 := int32(m.memory[uint32(v0-i32(25))])
 	t1 := int32(m.memory[uint32(v0-i32(26))])
@@ -27610,7 +27610,7 @@ func (m *Module) fn107(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+32:], uint64(v1))
 	store64(m.memory[uint32(v0):], uint64(v1))
 }
-func (m *Module) fn108(v0 int32) {
+func (m *module) fn108(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+224:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 	store64(m.memory[int64(uint32(v0))+192:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 	store64(m.memory[int64(uint32(v0))+160:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
@@ -27620,7 +27620,7 @@ func (m *Module) fn108(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+32:], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 	store64(m.memory[uint32(v0):], uint64(i64(-0x7f7f7f7f7f7f7f80)))
 }
-func (m *Module) fn109(v0, v1, v2 int32) {
+func (m *module) fn109(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -27888,7 +27888,7 @@ func (m *Module) fn109(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn110(v0, v1 int32) {
+func (m *module) fn110(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -28240,7 +28240,7 @@ func (m *Module) fn110(v0, v1 int32) {
 	}
 	m.memory[int64(uint32(t109))+99] = byte(p111)
 }
-func (m *Module) fn111(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn111(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -28402,7 +28402,7 @@ l0:
 		goto l1
 	}
 }
-func (m *Module) fn112(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn112(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -28547,7 +28547,7 @@ l0:
 		goto l1
 	}
 }
-func (m *Module) fn113() {
+func (m *module) fn113() {
 	var v0 int32
 	t0 := int32(load32(m.memory[uint32(i32(106424)):]))
 	v0 = t0
@@ -28564,7 +28564,7 @@ func (m *Module) fn113() {
 		store32(m.memory[uint32(i32(106264)):], uint32(v0))
 	}
 }
-func (m *Module) fn114(v0, v1, v2, v3 int32) {
+func (m *module) fn114(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -28661,7 +28661,7 @@ func (m *Module) fn114(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn115(v0, v1, v2, v3 int32) {
+func (m *module) fn115(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -28754,7 +28754,7 @@ l3:
 		}
 	}
 }
-func (m *Module) fn116(v0, v1, v2, v3 int32) {
+func (m *module) fn116(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -28820,7 +28820,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn117(v0, v1, v2, v3 int32) {
+func (m *module) fn117(v0, v1, v2, v3 int32) {
 	if v1 == v2 {
 		return
 	}
@@ -28829,7 +28829,7 @@ func (m *Module) fn117(v0, v1, v2, v3 int32) {
 	}
 	memory_copy(m.memory, uint32(v2), uint32(v1), uint32(v3))
 }
-func (m *Module) fn118(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn118(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -28999,7 +28999,7 @@ l6:
 		}
 	}
 }
-func (m *Module) fn119(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn119(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -29104,7 +29104,7 @@ l4:
 		goto l5
 	}
 }
-func (m *Module) fn120(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn120(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -29284,19 +29284,19 @@ l8:
 		}
 	}
 }
-func (m *Module) fn121(v0, v1 int32) int32 {
+func (m *module) fn121(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v1):]))
 	return t0
 }
-func (m *Module) fn122(v0, v1 int32) int32 {
+func (m *module) fn122(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[int64(uint32(v1))+4:]))
 	return t0
 }
-func (m *Module) fn123(v0, v1 int32) int32 {
+func (m *module) fn123(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v1-i32(4)):]))
 	return t0
 }
-func (m *Module) fn124(v0, v1 int32) int32 {
+func (m *module) fn124(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v1))+4:]))
 	v2 = t0
@@ -29309,7 +29309,7 @@ func (m *Module) fn124(v0, v1 int32) int32 {
 	v1 = t3
 	return int32(uint32(t4^v1)>>1)&i32(2139062143) + v0&v1
 }
-func (m *Module) fn125(v0, v1 int32) int32 {
+func (m *module) fn125(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v1-i32(4)):]))
 	v1 = t0
 	t1 := int32(load32(m.memory[uint32(v0):]))
@@ -29317,7 +29317,7 @@ func (m *Module) fn125(v0, v1 int32) int32 {
 	v0 = t1
 	return int32(uint32(t2^v0)>>1)&i32(2139062143) + v0&v1
 }
-func (m *Module) fn126(v0, v1 int32) int32 {
+func (m *module) fn126(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v1):]))
 	v1 = t0
 	t1 := int32(load32(m.memory[uint32(v0):]))
@@ -29325,7 +29325,7 @@ func (m *Module) fn126(v0, v1 int32) int32 {
 	v0 = t1
 	return int32(uint32(t2^v0)>>1)&i32(2139062143) + v0&v1
 }
-func (m *Module) fn127(v0, v1 int32) int32 {
+func (m *module) fn127(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v1):]))
 	v0 = t0
 	t1 := int32(load32(m.memory[uint32(v1-i32(4)):]))
@@ -29333,7 +29333,7 @@ func (m *Module) fn127(v0, v1 int32) int32 {
 	v1 = t1
 	return int32(uint32(t2^v1)>>1)&i32(2139062143) + v0&v1
 }
-func (m *Module) fn128(v0, v1 int32) int32 {
+func (m *module) fn128(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[int64(uint32(v1))+4:]))
 	v0 = t0
 	t1 := int32(load32(m.memory[uint32(v1):]))
@@ -29341,7 +29341,7 @@ func (m *Module) fn128(v0, v1 int32) int32 {
 	v1 = t1
 	return int32(uint32(t2^v1)>>1)&i32(2139062143) + v0&v1
 }
-func (m *Module) fn129(v0, v1 int32) int32 {
+func (m *module) fn129(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	t0 := int32(load32(m.memory[int64(uint32(v1))+4:]))
@@ -29359,7 +29359,7 @@ func (m *Module) fn129(v0, v1 int32) int32 {
 	v0 = int32(uint32(t6^v0)>>1)&i32(2139062143) + v0&v1
 	return int32(uint32(t4^v0)>>1)&i32(2139062143) + v0&v2
 }
-func (m *Module) fn130(v0, v1 int32) int32 {
+func (m *module) fn130(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -29418,7 +29418,7 @@ func (m *Module) fn130(v0, v1 int32) int32 {
 	}
 	return p24
 }
-func (m *Module) fn131(v0, v1 int32) int32 {
+func (m *module) fn131(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	t0 := int32(load32(m.memory[uint32(v1):]))
@@ -29454,7 +29454,7 @@ func (m *Module) fn131(v0, v1 int32) int32 {
 	}
 	return t10 + p11<<8
 }
-func (m *Module) fn132(v0, v1 int32) int32 {
+func (m *module) fn132(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := int32(load32(m.memory[uint32(v1):]))
 	v2 = t0
@@ -29495,7 +29495,7 @@ func (m *Module) fn132(v0, v1 int32) int32 {
 	}
 	return t11 + p12<<8
 }
-func (m *Module) fn133(v0, v1, v2 int32) {
+func (m *module) fn133(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -29544,7 +29544,7 @@ func (m *Module) fn133(v0, v1, v2 int32) {
 		store32(m.memory[uint32(t8):], uint32((v1&i32(255)+v0&i32(0xff00ff)+v1<<16)&i32(0xff00ff)|v0&i32(-0xff0100)))
 	}
 }
-func (m *Module) fn134(v0, v1, v2, v3 int32) {
+func (m *module) fn134(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -29574,7 +29574,7 @@ func (m *Module) fn134(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn135(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn135(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -29688,7 +29688,7 @@ func (m *Module) fn135(v0, v1, v2, v3, v4 int32) {
 		m.t0[uint(t18)].(func(int32, int32, int32, int32, int32, int32))(v3, v7, v4, v1, v2, v6)
 	}
 }
-func (m *Module) fn136(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn136(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -30190,7 +30190,7 @@ func (m *Module) fn136(v0, v1, v2, v3, v4 int32) {
 l4:
 	m.g0 = v13 + i32(16)
 }
-func (m *Module) fn137(v0, v1, v2 int32) {
+func (m *module) fn137(v0, v1, v2 int32) {
 	var v3 int32
 	if v1 > i32(0) {
 		v3 = v0 + v1<<2
@@ -30210,7 +30210,7 @@ func (m *Module) fn137(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn138(v0, v1, v2 int32) {
+func (m *module) fn138(v0, v1, v2 int32) {
 	var v3 int32
 	if v1 > i32(0) {
 		v3 = v0 + v1<<2
@@ -30231,7 +30231,7 @@ func (m *Module) fn138(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn139(v0, v1, v2 int32) {
+func (m *module) fn139(v0, v1, v2 int32) {
 	var v3 int32
 	if v1 > i32(0) {
 		v3 = v0 + v1<<2
@@ -30250,7 +30250,7 @@ func (m *Module) fn139(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn140(v0, v1, v2 int32) {
+func (m *module) fn140(v0, v1, v2 int32) {
 	var v3 int32
 	if v1 > i32(0) {
 		v3 = v0 + v1<<2
@@ -30269,7 +30269,7 @@ func (m *Module) fn140(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn141(v0, v1, v2 int32) {
+func (m *module) fn141(v0, v1, v2 int32) {
 	var v3 int32
 	if v1 > i32(0) {
 		v3 = v0 + v1<<2
@@ -30289,7 +30289,7 @@ func (m *Module) fn141(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn142(v0, v1, v2, v3 int32) {
+func (m *module) fn142(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	{
@@ -30419,7 +30419,7 @@ l12:
 	t13 := int32(load32(m.memory[uint32(i32(106384)):]))
 	m.t0[uint(t13)].(func(int32, int32, int32, int32, int32))(v3, i32(0), v1, i32(1), i32(0))
 }
-func (m *Module) fn143() {
+func (m *module) fn143() {
 	var v0 int32
 	t0 := int32(load32(m.memory[uint32(i32(106424)):]))
 	v0 = t0
@@ -30488,11 +30488,11 @@ func (m *Module) fn143() {
 func fn144(v0, v1 int32) int32 {
 	return i32(-0x1000000)
 }
-func (m *Module) fn145(v0, v1 int32) int32 {
+func (m *module) fn145(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v0):]))
 	return t0
 }
-func (m *Module) fn146(v0, v1, v2, v3 int32) {
+func (m *module) fn146(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var _ int32
 	var v6 int32
@@ -30529,7 +30529,7 @@ func (m *Module) fn146(v0, v1, v2, v3 int32) {
 		store32(m.memory[uint32(t4+v1):], uint32(t5-i32(0x1000000)))
 	}
 }
-func (m *Module) fn147(v0, v1, v2, v3 int32) {
+func (m *module) fn147(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -30591,7 +30591,7 @@ func (m *Module) fn147(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn148(v0, v1, v2, v3 int32) {
+func (m *module) fn148(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -30648,7 +30648,7 @@ func (m *Module) fn148(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn149(v0, v1, v2, v3 int32) {
+func (m *module) fn149(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -30728,7 +30728,7 @@ func (m *Module) fn149(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn150(v0, v1, v2, v3 int32) {
+func (m *module) fn150(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -30767,7 +30767,7 @@ func (m *Module) fn150(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn151(v0, v1, v2, v3 int32) {
+func (m *module) fn151(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30795,7 +30795,7 @@ func (m *Module) fn151(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn152(v0, v1, v2, v3 int32) {
+func (m *module) fn152(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30824,7 +30824,7 @@ func (m *Module) fn152(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn153(v0, v1, v2, v3 int32) {
+func (m *module) fn153(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30851,7 +30851,7 @@ func (m *Module) fn153(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn154(v0, v1, v2, v3 int32) {
+func (m *module) fn154(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30879,7 +30879,7 @@ func (m *Module) fn154(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn155(v0, v1, v2, v3 int32) {
+func (m *module) fn155(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -30912,7 +30912,7 @@ func (m *Module) fn155(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn156(v0, v1, v2, v3 int32) {
+func (m *module) fn156(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30936,7 +30936,7 @@ func (m *Module) fn156(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn157(v0, v1, v2, v3 int32) {
+func (m *module) fn157(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30960,7 +30960,7 @@ func (m *Module) fn157(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn158(v0, v1, v2, v3 int32) {
+func (m *module) fn158(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -30983,7 +30983,7 @@ func (m *Module) fn158(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn159(v0, v1, v2, v3 int32) {
+func (m *module) fn159(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -31035,7 +31035,7 @@ func (m *Module) fn159(v0, v1, v2, v3 int32) {
 		store32(m.memory[uint32(t10):], uint32((v0&i32(-0xff0100)+v4&i32(-0xff0100))&i32(-0xff0100)|(v0&i32(0xff00ff)+v4&i32(0xff00ff))&i32(0xff00ff)))
 	}
 }
-func (m *Module) fn160(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn160(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -31101,7 +31101,7 @@ func (m *Module) fn160(v0, v1, v2, v3, v4, v5 int32) {
 		}
 	}
 }
-func (m *Module) fn161(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn161(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -31167,7 +31167,7 @@ func (m *Module) fn161(v0, v1, v2, v3, v4, v5 int32) {
 		}
 	}
 }
-func (m *Module) fn162(v0, v1 int32) {
+func (m *module) fn162(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -31286,7 +31286,7 @@ func (m *Module) fn162(v0, v1 int32) {
 		}
 	}
 }
-func (m *Module) fn163(v0, v1 int32) {
+func (m *module) fn163(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -31356,7 +31356,7 @@ func (m *Module) fn163(v0, v1 int32) {
 		}
 	}
 }
-func (m *Module) fn164(v0 int32) {
+func (m *module) fn164(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -31460,7 +31460,7 @@ func (m *Module) fn164(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn165(v0 int32) {
+func (m *module) fn165(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -31567,7 +31567,7 @@ func (m *Module) fn165(v0 int32) {
 		store32(m.memory[uint32(v3):], uint32(i32(0)))
 	}
 }
-func (m *Module) fn166(v0 int32) {
+func (m *module) fn166(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -31625,7 +31625,7 @@ func (m *Module) fn166(v0 int32) {
 		store32(m.memory[int64(uint32(v0))+64:], uint32(t16+i32(1)))
 	}
 }
-func (m *Module) fn167(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn167(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -32084,7 +32084,7 @@ l0:
 		m.memory[int64(uint32(t125))+1] = byte(p128)
 	}
 }
-func (m *Module) fn168(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn168(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -32543,7 +32543,7 @@ l0:
 		m.memory[int64(uint32(t125))+1] = byte(p128)
 	}
 }
-func (m *Module) fn169(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn169(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -32978,7 +32978,7 @@ l0:
 		m.memory[uint32(t113)] = byte(p117 | p120)
 	}
 }
-func (m *Module) fn170(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn170(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -33437,7 +33437,7 @@ l0:
 		m.memory[int64(uint32(t125))+2] = byte(p128)
 	}
 }
-func (m *Module) fn171(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn171(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -33894,7 +33894,7 @@ l0:
 		m.memory[int64(uint32(t130))+1] = byte(t131 | p134)
 	}
 }
-func (m *Module) fn172(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn172(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -34345,7 +34345,7 @@ l0:
 		m.memory[int64(uint32(t125))+1] = byte(p128)
 	}
 }
-func (m *Module) fn173(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
+func (m *module) fn173(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -34796,7 +34796,7 @@ l0:
 		m.memory[int64(uint32(t125))+1] = byte(p128)
 	}
 }
-func (m *Module) fn174() {
+func (m *module) fn174() {
 	var v0 int32
 	t0 := int32(load32(m.memory[uint32(i32(106424)):]))
 	v0 = t0
@@ -34816,7 +34816,7 @@ func (m *Module) fn174() {
 		store32(m.memory[uint32(i32(106280)):], uint32(v0))
 	}
 }
-func (m *Module) fn175(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn175(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -34883,7 +34883,7 @@ func (m *Module) fn175(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn176(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn176(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -34950,7 +34950,7 @@ func (m *Module) fn176(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn177(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn177(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35016,7 +35016,7 @@ func (m *Module) fn177(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn178(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn178(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35082,7 +35082,7 @@ func (m *Module) fn178(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn179(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn179(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35149,7 +35149,7 @@ func (m *Module) fn179(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn180(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn180(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35213,7 +35213,7 @@ func (m *Module) fn180(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn181(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn181(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35279,7 +35279,7 @@ func (m *Module) fn181(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn182(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn182(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35437,7 +35437,7 @@ func (m *Module) fn182(v0, v1, v2, v3, v4 int32) {
 		m.memory[uint32(t36)] = byte(p39 | p42)
 	}
 }
-func (m *Module) fn183(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn183(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35604,7 +35604,7 @@ func (m *Module) fn183(v0, v1, v2, v3, v4 int32) {
 		m.memory[int64(uint32(t42))+2] = byte(p45)
 	}
 }
-func (m *Module) fn184(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn184(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35771,7 +35771,7 @@ func (m *Module) fn184(v0, v1, v2, v3, v4 int32) {
 		m.memory[int64(uint32(t42))+1] = byte(p45)
 	}
 }
-func (m *Module) fn185(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn185(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -35938,7 +35938,7 @@ func (m *Module) fn185(v0, v1, v2, v3, v4 int32) {
 		m.memory[int64(uint32(t42))+1] = byte(p45)
 	}
 }
-func (m *Module) fn186(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn186(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -36106,7 +36106,7 @@ func (m *Module) fn186(v0, v1, v2, v3, v4 int32) {
 		m.memory[int64(uint32(t45))+1] = byte(t46 | p49)
 	}
 }
-func (m *Module) fn187(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn187(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -36270,7 +36270,7 @@ func (m *Module) fn187(v0, v1, v2, v3, v4 int32) {
 		m.memory[int64(uint32(t42))+1] = byte(p45)
 	}
 }
-func (m *Module) fn188(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn188(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -36434,7 +36434,7 @@ func (m *Module) fn188(v0, v1, v2, v3, v4 int32) {
 		m.memory[int64(uint32(t42))+1] = byte(p45)
 	}
 }
-func (m *Module) fn189(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn189(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -36524,7 +36524,7 @@ l0:
 		m.memory[uint32(v1)] = byte(int32(uint32(v0+t20+i32(1)) >> 1))
 	}
 }
-func (m *Module) fn190(v0, v1, v2, v3 int32) {
+func (m *module) fn190(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -36574,7 +36574,7 @@ func (m *Module) fn190(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn191() {
+func (m *module) fn191() {
 	var v0 int32
 	t0 := int32(load32(m.memory[uint32(i32(106424)):]))
 	v0 = t0
@@ -36588,7 +36588,7 @@ func (m *Module) fn191() {
 		store32(m.memory[uint32(i32(106288)):], uint32(v0))
 	}
 }
-func (m *Module) fn192(v0, v1, v2 int32) {
+func (m *module) fn192(v0, v1, v2 int32) {
 	var v3 int32
 	if v2 > i32(0) {
 	l0:
@@ -36606,7 +36606,7 @@ func (m *Module) fn192(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn193(v0, v1, v2 int32) {
+func (m *module) fn193(v0, v1, v2 int32) {
 	var v3 int32
 	var _ int32
 	var v5 int32
@@ -36645,7 +36645,7 @@ func (m *Module) fn193(v0, v1, v2 int32) {
 		m.memory[uint32(v1+v3)] = byte(int32(uint32(t8*i32(16839)+t9*i32(33059)+t10*i32(6420)+i32(1081344)) >> 16))
 	}
 }
-func (m *Module) fn194(v0, v1, v2 int32) {
+func (m *module) fn194(v0, v1, v2 int32) {
 	var v3 int32
 	var _ int32
 	var v5 int32
@@ -36684,7 +36684,7 @@ func (m *Module) fn194(v0, v1, v2 int32) {
 		m.memory[uint32(v1+v3)] = byte(int32(uint32(t8*i32(16839)+t9*i32(33059)+t10*i32(6420)+i32(1081344)) >> 16))
 	}
 }
-func (m *Module) fn195(v0 int32) int32 {
+func (m *module) fn195(v0 int32) int32 {
 	var _ int32
 	var p0 int32
 	if v0 != 0 {
@@ -36711,7 +36711,7 @@ func (m *Module) fn195(v0 int32) int32 {
 	}
 	return p0
 }
-func (m *Module) fn196(v0 int32) int32 {
+func (m *module) fn196(v0 int32) int32 {
 	var v1 int32
 	var v2 float32
 	var v3 int32
@@ -36850,7 +36850,7 @@ l0:
 func fn197(v0, v1, v2 int32) int32 {
 	return i32(1)
 }
-func (m *Module) fn198(v0 int32) int32 {
+func (m *module) fn198(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -36902,7 +36902,7 @@ l1:
 	store32(m.memory[int64(uint32(v0))+52:], uint32((v1+i32(31))&i32(-32)))
 	return i32(1)
 }
-func (m *Module) fn199(v0 int32) int32 {
+func (m *module) fn199(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -37013,7 +37013,7 @@ l2:
 	}
 	return i32(1)
 }
-func (m *Module) fn200(v0 int32) int32 {
+func (m *module) fn200(v0 int32) int32 {
 	if v0 == 0 {
 		return i32(1)
 	}
@@ -37035,7 +37035,7 @@ func (m *Module) fn200(v0 int32) int32 {
 	t4 := m.fn198(v0)
 	return t4
 }
-func (m *Module) fn201(v0 int32) {
+func (m *module) fn201(v0 int32) {
 	if v0 != 0 {
 		t0 := int32(load32(m.memory[int64(uint32(v0))+156:]))
 		m.fn408(t0)
@@ -37049,7 +37049,7 @@ func (m *Module) fn201(v0 int32) {
 		store32(m.memory[int64(uint32(v0))+40:], uint32(i32(0)))
 	}
 }
-func (m *Module) fn202(v0, v1, v2 int32) int32 {
+func (m *module) fn202(v0, v1, v2 int32) int32 {
 	var v3 int64
 	var v4 int64
 	var v5 int32
@@ -37114,7 +37114,7 @@ func (m *Module) fn202(v0, v1, v2 int32) int32 {
 l0:
 	return i32(1)
 }
-func (m *Module) fn203(v0 int32) int32 {
+func (m *module) fn203(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -37190,7 +37190,7 @@ func (m *Module) fn203(v0 int32) int32 {
 l0:
 	return i32(0)
 }
-func (m *Module) fn204(v0, v1, v2, v3, v4 int32, v5 float32, v6, v7 int32) int32 {
+func (m *module) fn204(v0, v1, v2, v3, v4 int32, v5 float32, v6, v7 int32) int32 {
 	var v8 int32
 	var v9 int32
 	var v10 int32
@@ -38496,7 +38496,7 @@ l2:
 	m.g0 = v58 + i32(240)
 	return v10
 }
-func (m *Module) fn205(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn205(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -38628,7 +38628,7 @@ l0:
 		store16(m.memory[int64(uint32(t53))+4:], uint16(int32(uint32(t58*t59+t60*(i32(512)-v1)-i32(-64))>>7)))
 	}
 }
-func (m *Module) fn206(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn206(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -38900,7 +38900,7 @@ l0:
 		store16(m.memory[int64(uint32(t119))+4:], uint16(int32(uint32(t120*t121+t122*(i32(512)-v8)-i32(-64))>>7)))
 	}
 }
-func (m *Module) fn207(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn207(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -39009,7 +39009,7 @@ func (m *Module) fn207(v0, v1, v2, v3, v4 int32) {
 func fn208(v0, v1, v2, v3 int32) float64 {
 	panic("unreachable")
 }
-func (m *Module) fn209(v0, v1, v2, v3, v4, v5, v6, v7 int32) float64 {
+func (m *module) fn209(v0, v1, v2, v3, v4, v5, v6, v7 int32) float64 {
 	var v8 int64
 	var v9 int32
 	var v10 int32
@@ -39156,7 +39156,7 @@ l0:
 	}
 	return p17
 }
-func (m *Module) fn210(v0, v1, v2 int32) int32 {
+func (m *module) fn210(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var _ int32
@@ -39201,7 +39201,7 @@ func (m *Module) fn210(v0, v1, v2 int32) int32 {
 l1:
 	return v3
 }
-func (m *Module) fn211(v0 int32) {
+func (m *module) fn211(v0 int32) {
 	t0 := int32(load32(m.memory[int64(uint32(v0))+280:]))
 	v0 = t0
 	if v0 != 0 {
@@ -39217,7 +39217,7 @@ func (m *Module) fn211(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn212(v0 int32) {
+func (m *module) fn212(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -39358,7 +39358,7 @@ func (m *Module) fn212(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn213(v0, v1 int32) float64 {
+func (m *module) fn213(v0, v1 int32) float64 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -39431,7 +39431,7 @@ l1:
 	}
 	return v5
 }
-func (m *Module) fn214(v0, v1, v2 int32) {
+func (m *module) fn214(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -39638,13 +39638,13 @@ func (m *Module) fn214(v0, v1, v2 int32) {
 	}
 	store16(m.memory[int64(uint32(t81))+14:], uint16(t82+p83))
 }
-func (m *Module) fn215(v0, v1, v2, v3 int32) {
+func (m *module) fn215(v0, v1, v2, v3 int32) {
 	m.fn233(v0, v1, v2)
 	if v3 != 0 {
 		m.fn233(v0+i32(4), v1+i32(32), v2+i32(4))
 	}
 }
-func (m *Module) fn216(v0, v1 int32) {
+func (m *module) fn216(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -39811,7 +39811,7 @@ func (m *Module) fn216(v0, v1 int32) {
 	store16(m.memory[int64(uint32(v1))+14:], uint16(int32(uint32(v0+v2)>>1)))
 	store16(m.memory[int64(uint32(v1))+6:], uint16(int32(uint32(v4+v5)>>1)))
 }
-func (m *Module) fn217(v0, v1, v2 int32) int32 {
+func (m *module) fn217(v0, v1, v2 int32) int32 {
 	t0 := m.fn234(v0, v2)
 	v0 = t0
 	t1 := m.fn234(v1, v2)
@@ -39820,7 +39820,7 @@ func (m *Module) fn217(v0, v1, v2 int32) int32 {
 	v0 = v0 >> 31
 	return int32(uint32(t2^v0-v0) >> 5)
 }
-func (m *Module) fn218(v0, v1, v2 int32) int32 {
+func (m *module) fn218(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -40307,7 +40307,7 @@ l1:
 	}
 	return v2
 }
-func (m *Module) fn219(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn219(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -41250,7 +41250,7 @@ func (m *Module) fn219(v0, v1, v2, v3, v4 int32) {
 	store32(m.memory[uint32(t168):], uint32(p261))
 	m.g0 = v6 + i32(160)
 }
-func (m *Module) fn220(v0, v1 int32) int32 {
+func (m *module) fn220(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -41332,7 +41332,7 @@ l0:
 	}
 	return v2
 }
-func (m *Module) fn221(v0, v1 int32) int32 {
+func (m *module) fn221(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -41414,7 +41414,7 @@ l0:
 	}
 	return v2
 }
-func (m *Module) fn222(v0, v1 int32) int32 {
+func (m *module) fn222(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := int32(m.memory[int64(uint32(v0))+1])
 	t1 := int32(m.memory[int64(uint32(v1))+1])
@@ -41673,7 +41673,7 @@ func (m *Module) fn222(v0, v1 int32) int32 {
 	v0 = t188 - t189
 	return t190 + v0*v0
 }
-func (m *Module) fn223(v0, v1 int32) int32 {
+func (m *module) fn223(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := int32(m.memory[int64(uint32(v0))+1])
 	t1 := int32(m.memory[int64(uint32(v1))+1])
@@ -41740,7 +41740,7 @@ func (m *Module) fn223(v0, v1 int32) int32 {
 	v0 = t44 - t45
 	return t46 + v0*v0
 }
-func (m *Module) fn224(v0, v1, v2 int32) int32 {
+func (m *module) fn224(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -41810,14 +41810,14 @@ l0:
 	}
 	return int32(uint32(v5^i32(-1)) >> 31)
 }
-func (m *Module) fn225(v0, v1, v2 int32) int32 {
+func (m *module) fn225(v0, v1, v2 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(i32(107836)):]))
 	t1 := m.t0[uint(t0)].(func(int32, int32, int32) int32)(v0, v1, v2)
 	t2 := int32(load32(m.memory[uint32(i32(107836)):]))
 	t3 := m.t0[uint(t2)].(func(int32, int32, int32) int32)(v0+i32(32), v1+i32(32), v2)
 	return t1 | t3<<1
 }
-func (m *Module) fn226(v0, v1 int32) {
+func (m *module) fn226(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -42116,7 +42116,7 @@ func (m *Module) fn226(v0, v1 int32) {
 	m.memory[int64(uint32(v0))+1735] = byte(v10)
 	m.memory[int64(uint32(v0))+1734] = byte(v10)
 }
-func (m *Module) fn227(v0, v1, v2 int32) {
+func (m *module) fn227(v0, v1, v2 int32) {
 	var v3 int64
 	var v4 int32
 	var v5 int64
@@ -42678,13 +42678,13 @@ l2:
 	store64(m.memory[int64(uint32(v1))+8:], uint64(i64(-9114861777597660799)))
 	store64(m.memory[uint32(v1):], uint64(i64(-9114861777597660799)))
 }
-func (m *Module) fn228(v0, v1, v2 int32) {
+func (m *module) fn228(v0, v1, v2 int32) {
 	t0 := int32(load32(m.memory[uint32(i32(107784)):]))
 	m.t0[uint(t0)].(func(int32, int32, int32))(v0, v1, v2)
 	t1 := int32(load32(m.memory[uint32(i32(107784)):]))
 	m.t0[uint(t1)].(func(int32, int32, int32))(v0+i32(4), v1+i32(4), v2+i32(32))
 }
-func (m *Module) fn229(v0, v1, v2 int32) {
+func (m *module) fn229(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int64
@@ -43522,7 +43522,7 @@ l3:
 	store64(m.memory[int64(uint32(v0))+1080:], uint64(i64(-9114861777597660799)))
 	store64(m.memory[int64(uint32(v0))+1048:], uint64(i64(-9114861777597660799)))
 }
-func (m *Module) fn230(v0, v1 int32) {
+func (m *module) fn230(v0, v1 int32) {
 	t0 := int32(m.memory[int64(uint32(v0))+99])
 	t1 := int32(m.memory[int64(uint32(v0))+98])
 	t2 := int32(m.memory[int64(uint32(v0))+97])
@@ -43592,7 +43592,7 @@ func (m *Module) fn230(v0, v1 int32) {
 	t63 := int32(m.memory[int64(uint32(v0))+13])
 	store32(m.memory[int64(uint32(v1))+12:], uint32(t48+(t49+(t50+(t51+(t52+(t53+(t54+(t55+(t56+(t57+(t58+(t59+(t60+(t61+(t62+t63))))))))))))))))
 }
-func (m *Module) fn231(v0, v1 int32) {
+func (m *module) fn231(v0, v1 int32) {
 	t0 := int32(load32(m.memory[uint32(v0):]))
 	store32(m.memory[uint32(v1):], uint32(t0))
 	t1 := int32(load32(m.memory[int64(uint32(v0))+32:]))
@@ -43602,7 +43602,7 @@ func (m *Module) fn231(v0, v1 int32) {
 	t3 := int32(load32(m.memory[int64(uint32(v0))+96:]))
 	store32(m.memory[int64(uint32(v1))+96:], uint32(t3))
 }
-func (m *Module) fn232(v0, v1 int32) {
+func (m *module) fn232(v0, v1 int32) {
 	t0 := int64(load64(m.memory[int64(uint32(v0))+8:]))
 	store64(m.memory[int64(uint32(v1))+8:], uint64(t0))
 	t1 := int64(load64(m.memory[uint32(v0):]))
@@ -43636,7 +43636,7 @@ func (m *Module) fn232(v0, v1 int32) {
 	t15 := int64(load64(m.memory[int64(uint32(v0))+224:]))
 	store64(m.memory[int64(uint32(v1))+224:], uint64(t15))
 }
-func (m *Module) fn233(v0, v1, v2 int32) {
+func (m *module) fn233(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -43988,7 +43988,7 @@ func (m *Module) fn233(v0, v1, v2 int32) {
 	}
 	m.memory[int64(uint32(t109))+99] = byte(p111)
 }
-func (m *Module) fn234(v0, v1 int32) int32 {
+func (m *module) fn234(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -44209,7 +44209,7 @@ func (m *Module) fn234(v0, v1 int32) int32 {
 	v0 = v0 >> 31
 	return t92 + t91*(t93^v0-v0)
 }
-func (m *Module) fn235(v0, v1 int32) {
+func (m *module) fn235(v0, v1 int32) {
 	store32(m.memory[int64(uint32(v1))+4:], uint32(i32(-1)))
 	{
 		t1 := v1
@@ -44302,7 +44302,7 @@ func (m *Module) fn235(v0, v1 int32) {
 l1:
 	store32(m.memory[int64(uint32(v1))+8:], uint32(v0))
 }
-func (m *Module) fn236(v0, v1 int32) int32 {
+func (m *module) fn236(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -44399,7 +44399,7 @@ func (m *Module) fn236(v0, v1 int32) int32 {
 	t31 := int32(load16(m.memory[uint32(v3<<1+i32(78128)):]))
 	return t31
 }
-func (m *Module) fn237(v0 int32) {
+func (m *module) fn237(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -44722,14 +44722,14 @@ func (m *Module) fn237(v0 int32) {
 		store32(m.memory[int64(uint32(v0))+19108:], uint32(i32(0)))
 	}
 }
-func (m *Module) fn238(v0, v1, v2, v3 int32) {
+func (m *module) fn238(v0, v1, v2, v3 int32) {
 	store32(m.memory[int64(uint32(v3))+12:], uint32(v1))
 	store32(m.memory[uint32(v3):], uint32(v0))
 	store32(m.memory[int64(uint32(v3))+24:], uint32(v2+v1*i32(192)+i32(21756)))
 	store32(m.memory[int64(uint32(v3))+20:], uint32(v2+v1*i32(1056)+i32(4476)))
 	store32(m.memory[int64(uint32(v3))+16:], uint32(v2+v1*i32(264)+i32(3420)))
 }
-func (m *Module) fn239(v0, v1 int32) int32 {
+func (m *module) fn239(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -44969,7 +44969,7 @@ func (m *Module) fn239(v0, v1 int32) int32 {
 	m.g0 = v4 + i32(32)
 	return t105 + (v19 + (v18 + (v17 + (v16 + (v15 + (v14 + (v13 + (v12 + (v11 + (v10 + (v9 + (v8 + (v7 + (v6 + (v5 + v20)))))))))))))))
 }
-func (m *Module) fn240(v0, v1 int32) int32 {
+func (m *module) fn240(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -45092,7 +45092,7 @@ func (m *Module) fn240(v0, v1 int32) int32 {
 	m.g0 = v3 + i32(32)
 	return t52 + (v11 + (v10 + (v9 + (v8 + (v7 + (v5 + v6))))))
 }
-func (m *Module) fn241(v0, v1 int32) int32 {
+func (m *module) fn241(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -45260,7 +45260,7 @@ func (m *Module) fn241(v0, v1 int32) int32 {
 	store32(m.memory[uint32(t36):], uint32(p37+i32(65536)))
 	return i32(0)
 }
-func (m *Module) fn242(v0, v1 int32) int32 {
+func (m *module) fn242(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -45418,7 +45418,7 @@ func (m *Module) fn242(v0, v1 int32) int32 {
 l0:
 	return int32(uint32(p23+v2+i32(8)) >> 4)
 }
-func (m *Module) fn243(v0, v1, v2 int32) int32 {
+func (m *module) fn243(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -47273,7 +47273,7 @@ l22:
 	m.g0 = v4 + i32(944)
 	return v0
 }
-func (m *Module) fn244(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn244(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -47569,7 +47569,7 @@ l0:
 	m.g0 = v4 + i32(544)
 	return p36
 }
-func (m *Module) fn245(v0, v1, v2 int32) int32 {
+func (m *module) fn245(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	v4 = v1 + i32(1)
@@ -47739,7 +47739,7 @@ l1:
 	}
 	return v1
 }
-func (m *Module) fn246(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
+func (m *module) fn246(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -48112,7 +48112,7 @@ l7:
 	m.g0 = v16 + i32(192)
 	return v0
 }
-func (m *Module) fn247(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn247(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -48419,7 +48419,7 @@ func (m *Module) fn247(v0, v1, v2, v3 int32) int32 {
 	m.g0 = v5 + i32(256)
 	return t94<<18 | v3<<16 | v7<<20 | v0<<22
 }
-func (m *Module) fn248(v0, v1 int32) {
+func (m *module) fn248(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	store64(m.memory[uint32(v1):], uint64(i64(0)))
@@ -48505,7 +48505,7 @@ l0:
 	memory_zero(m.memory, uint32(v1+i32(168)), uint32(i32(96)))
 	store32(m.memory[int64(uint32(v1))+284:], uint32(i32(0)))
 }
-func (m *Module) fn249(v0, v1 int32) int32 {
+func (m *module) fn249(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -48544,7 +48544,7 @@ func (m *Module) fn249(v0, v1 int32) int32 {
 l0:
 	return v2
 }
-func (m *Module) fn250(v0, v1 int32) {
+func (m *module) fn250(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -49587,7 +49587,7 @@ l30:
 		memory_fill(m.memory, uint32(v1+v2+i32(24)), t158, uint32(v0))
 	}
 }
-func (m *Module) fn251(v0 int32) {
+func (m *module) fn251(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -49731,7 +49731,7 @@ func (m *Module) fn251(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn252(v0 int32) {
+func (m *module) fn252(v0 int32) {
 	var v1 int32
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+40:]))
@@ -49759,7 +49759,7 @@ func (m *Module) fn252(v0 int32) {
 	store32(m.memory[int64(uint32(v0))+132:], uint32(int32(uint32(v2)>>7)&i32(1)))
 	store32(m.memory[int64(uint32(v0))+128:], uint32(int32(uint32(v2)>>3)&i32(1)))
 }
-func (m *Module) fn253(v0 int32) {
+func (m *module) fn253(v0 int32) {
 	t0 := int32(load32(m.memory[int64(uint32(v0))+40:]))
 	t1 := int32(load32(m.memory[int64(uint32(v0))+96:]))
 	t2 := int32(load32(m.memory[int64(uint32(v0))+92:]))
@@ -49777,7 +49777,7 @@ func (m *Module) fn253(v0 int32) {
 	t14 := int32(load32(m.memory[int64(uint32(v0))+152:]))
 	store32(m.memory[uint32(t0):], uint32(t1<<13|t2<<12|t3<<14|t4<<15|t5<<18|t6<<19|t7<<22|t8<<23|t9<<24|t10<<3|t11<<7|t12<<11|t13<<17|t14<<21))
 }
-func (m *Module) fn254(v0 int32) {
+func (m *module) fn254(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -49915,7 +49915,7 @@ func (m *Module) fn254(v0 int32) {
 		store64(m.memory[uint32(v0):], uint64(t84))
 	}
 }
-func (m *Module) fn255(v0 int32) int32 {
+func (m *module) fn255(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -49996,7 +49996,7 @@ l0:
 	}
 	return p28
 }
-func (m *Module) fn256(v0, v1 int32) {
+func (m *module) fn256(v0, v1 int32) {
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+36:]))
 	v2 = t0
@@ -50019,7 +50019,7 @@ func (m *Module) fn256(v0, v1 int32) {
 	t9 := int32(m.memory[uint32(v0)])
 	m.memory[uint32(v0)] = byte(t9&i32(252) | i32(1))
 }
-func (m *Module) fn257(v0, v1 int32) {
+func (m *module) fn257(v0, v1 int32) {
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+36:]))
 	v2 = t0
@@ -50044,7 +50044,7 @@ func (m *Module) fn257(v0, v1 int32) {
 	t12 := int32(m.memory[uint32(v0)])
 	m.memory[uint32(v0)] = byte(t12 & i32(252))
 }
-func (m *Module) fn258(v0 int32) {
+func (m *module) fn258(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -50171,7 +50171,7 @@ l0:
 	store32(m.memory[int64(uint32(v0))+132:], uint32(int32(uint32(v1)>>7)&i32(1)))
 	store32(m.memory[int64(uint32(v0))+128:], uint32(int32(uint32(v1)>>3)&i32(1)))
 }
-func (m *Module) fn259(v0, v1 int32) int32 {
+func (m *module) fn259(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+84:]))
 	v2 = t0
@@ -50217,7 +50217,7 @@ l0:
 	}
 	return p15
 }
-func (m *Module) fn260(v0, v1 int32) int32 {
+func (m *module) fn260(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -50529,7 +50529,7 @@ l0:
 	m.g0 = v2 + i32(144)
 	return v3
 }
-func (m *Module) fn261(v0, v1 int32) {
+func (m *module) fn261(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -50578,7 +50578,7 @@ func (m *Module) fn261(v0, v1 int32) {
 		store32(m.memory[uint32(t9):], uint32((t10-v1)&i32(255)|v0&i32(-0xff0100)|(v0-v1<<16)&i32(0xff0000)))
 	}
 }
-func (m *Module) fn262(v0, v1, v2 int32) {
+func (m *module) fn262(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -50608,7 +50608,7 @@ func (m *Module) fn262(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn263(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn263(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -50674,7 +50674,7 @@ l3:
 		}
 	}
 }
-func (m *Module) fn264(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn264(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -50719,7 +50719,7 @@ l2:
 		}
 	}
 }
-func (m *Module) fn265(v0, v1, v2, v3 int32) {
+func (m *module) fn265(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -50829,7 +50829,7 @@ func (m *Module) fn265(v0, v1, v2, v3 int32) {
 		store32(m.memory[uint32(t18):], uint32(t20|p19))
 	}
 }
-func (m *Module) fn266() {
+func (m *module) fn266() {
 	t0 := int32(load32(m.memory[uint32(i32(106308)):]))
 	t1 := int32(load32(m.memory[uint32(i32(106424)):]))
 	if t0 != t1 {
@@ -50885,7 +50885,7 @@ func (m *Module) fn266() {
 		store32(m.memory[uint32(i32(106308)):], uint32(t2))
 	}
 }
-func (m *Module) fn267(v0 int32) int32 {
+func (m *module) fn267(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int64
@@ -50913,7 +50913,7 @@ func (m *Module) fn267(v0 int32) int32 {
 l0:
 	return p0
 }
-func (m *Module) fn268(v0 int32) int64 {
+func (m *module) fn268(v0 int32) int64 {
 	var v1 int32
 	var v2 float64
 	if uint32(v0) <= uint32(i32(0xffff)) {
@@ -50926,7 +50926,7 @@ func (m *Module) fn268(v0 int32) int64 {
 	t2 := m.fn396(v2)
 	return i64_trunc_sat_f64_u(float64(float64(float64(v2*float64(1.2102203161561485e+07))*t2) + float64(0.5)))
 }
-func (m *Module) fn269(v0, v1 int32) int32 {
+func (m *module) fn269(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var _ int32
@@ -50973,7 +50973,7 @@ func (m *Module) fn269(v0, v1 int32) int32 {
 l0:
 	return v3
 }
-func (m *Module) fn270(v0, v1 int32) int64 {
+func (m *module) fn270(v0, v1 int32) int64 {
 	var v2 int32
 	var v3 int32
 	var v4 int64
@@ -51066,7 +51066,7 @@ l4:
 l5:
 	return p17 + (v8 - v4)
 }
-func (m *Module) fn271(v0, v1 int32) int64 {
+func (m *module) fn271(v0, v1 int32) int64 {
 	var v2 int64
 	var v3 int32
 	var v4 int32
@@ -51110,7 +51110,7 @@ l2:
 	t7 := m.t0[uint(t6)].(func(int32) int64)(v3)
 	return t7 - v2
 }
-func (m *Module) fn272(v0, v1, v2, v3 int32) {
+func (m *module) fn272(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -51278,7 +51278,7 @@ l5:
 l7:
 	store64(m.memory[uint32(t31):], uint64(p30-v7))
 }
-func (m *Module) fn273(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn273(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -51450,7 +51450,7 @@ l5:
 l7:
 	store64(m.memory[uint32(t33):], uint64(p32-v8))
 }
-func (m *Module) fn274(v0, v1, v2, v3 int32) {
+func (m *module) fn274(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -51494,7 +51494,7 @@ func (m *Module) fn274(v0, v1, v2, v3 int32) {
 		store32(m.memory[uint32(t6+v3):], uint32(t7+t8))
 	}
 }
-func (m *Module) fn275(v0, v1, v2 int32) {
+func (m *module) fn275(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -51557,7 +51557,7 @@ func (m *Module) fn275(v0, v1, v2 int32) {
 		}
 	}
 }
-func (m *Module) fn276(v0, v1, v2 int32) int32 {
+func (m *module) fn276(v0, v1, v2 int32) int32 {
 	var v3 int32
 	if v2 <= i32(0) {
 		goto l0
@@ -51581,7 +51581,7 @@ l1:
 l0:
 	return v3
 }
-func (m *Module) fn277(v0, v1, v2, v3 int32) {
+func (m *module) fn277(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var _ int32
 	var v6 int32
@@ -51618,7 +51618,7 @@ func (m *Module) fn277(v0, v1, v2, v3 int32) {
 		store32(m.memory[uint32(t4+v1):], uint32(t5+i32(0x1000000)))
 	}
 }
-func (m *Module) fn278(v0, v1, v2, v3 int32) {
+func (m *module) fn278(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51641,7 +51641,7 @@ func (m *Module) fn278(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn279(v0, v1, v2, v3 int32) {
+func (m *module) fn279(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51664,7 +51664,7 @@ func (m *Module) fn279(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn280(v0, v1, v2, v3 int32) {
+func (m *module) fn280(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51687,7 +51687,7 @@ func (m *Module) fn280(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn281(v0, v1, v2, v3 int32) {
+func (m *module) fn281(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51710,7 +51710,7 @@ func (m *Module) fn281(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn282(v0, v1, v2, v3 int32) {
+func (m *module) fn282(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -51739,7 +51739,7 @@ func (m *Module) fn282(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn283(v0, v1, v2, v3 int32) {
+func (m *module) fn283(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -51768,7 +51768,7 @@ func (m *Module) fn283(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn284(v0, v1, v2, v3 int32) {
+func (m *module) fn284(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51795,7 +51795,7 @@ func (m *Module) fn284(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn285(v0, v1, v2, v3 int32) {
+func (m *module) fn285(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51822,7 +51822,7 @@ func (m *Module) fn285(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn286(v0, v1, v2, v3 int32) {
+func (m *module) fn286(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51845,7 +51845,7 @@ func (m *Module) fn286(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn287(v0, v1, v2, v3 int32) {
+func (m *module) fn287(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51869,7 +51869,7 @@ func (m *Module) fn287(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn288(v0, v1, v2, v3 int32) {
+func (m *module) fn288(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51893,7 +51893,7 @@ func (m *Module) fn288(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn289(v0, v1, v2, v3 int32) {
+func (m *module) fn289(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	if v2 > i32(0) {
@@ -51917,7 +51917,7 @@ func (m *Module) fn289(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn290(v0, v1, v2, v3 int32) {
+func (m *module) fn290(v0, v1, v2, v3 int32) {
 	var v4 int32
 	if v2 > i32(0) {
 		v0 = v0 - i32(4)
@@ -51938,7 +51938,7 @@ func (m *Module) fn290(v0, v1, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn291(v0, v1, v2 int32) {
+func (m *module) fn291(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -51995,7 +51995,7 @@ func (m *Module) fn291(v0, v1, v2 int32) {
 	}
 	m.g0 = v3 + i32(16)
 }
-func (m *Module) fn292(v0, v1, v2, v3 int32) {
+func (m *module) fn292(v0, v1, v2, v3 int32) {
 	var v4 int32
 	{
 		{
@@ -52093,7 +52093,7 @@ l4:
 	t28 := int32(load32(m.memory[uint32(v0):]))
 	store32(m.memory[uint32(v0):], uint32(t28+i32(1)))
 }
-func (m *Module) fn293(v0, v1, v2, v3 int32) {
+func (m *module) fn293(v0, v1, v2, v3 int32) {
 	var v4 int32
 	t0 := m.g0
 	v4 = t0 - i32(16)
@@ -52122,7 +52122,7 @@ func (m *Module) fn293(v0, v1, v2, v3 int32) {
 	}
 	m.g0 = v4 + i32(16)
 }
-func (m *Module) fn294(v0, v1 int32) {
+func (m *module) fn294(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	store32(m.memory[int64(uint32(v0))+3236:], uint32(v1))
@@ -52149,7 +52149,7 @@ func (m *Module) fn294(v0, v1 int32) {
 	store64(m.memory[int64(uint32(v0))+3288:], uint64(i64(0)))
 	store64(m.memory[int64(uint32(v0))+3296:], uint64(i64(0)))
 }
-func (m *Module) fn295(v0 int32) int32 {
+func (m *module) fn295(v0 int32) int32 {
 	var v1 int32
 	p0 := i32_shl(i32(4), v0) + i32(4432)
 	if v0 <= i32(0) {
@@ -52173,7 +52173,7 @@ func (m *Module) fn295(v0 int32) int32 {
 	}
 	return v1
 }
-func (m *Module) fn296(v0, v1 int32) int32 {
+func (m *module) fn296(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -52333,7 +52333,7 @@ func (m *Module) fn296(v0, v1 int32) int32 {
 l0:
 	return v5
 }
-func (m *Module) fn297(v0 int32) int64 {
+func (m *module) fn297(v0 int32) int64 {
 	var v1 int64
 	var v2 int32
 	var v3 int32
@@ -52472,7 +52472,7 @@ l5:
 	m.g0 = v2 + i32(32)
 	return p13
 }
-func (m *Module) fn298(v0 int32) int64 {
+func (m *module) fn298(v0 int32) int64 {
 	var v1 int32
 	t0 := int32(load32(m.memory[uint32(v0):]))
 	t1 := int32(load32(m.memory[int64(uint32(v0))+3236:]))
@@ -52495,7 +52495,7 @@ func (m *Module) fn298(v0 int32) int64 {
 	t13 := m.t0[uint(t12)].(func(int32, int32) int32)(v1, i32(40))
 	return t7 + t8 + int64(uint32(t11+t13))<<23
 }
-func (m *Module) fn299(v0, v1, v2, v3 int32) int64 {
+func (m *module) fn299(v0, v1, v2, v3 int32) int64 {
 	var v4 int32
 	var v5 int64
 	var v6 int64
@@ -52606,7 +52606,7 @@ l1:
 	m.g0 = v4 + i32(48)
 	return p10 + int64(uint32(t25*i32(240)+v0*i32(1600)+v2*i32(2640)+v3*i32(720)+v7*i32(1840)+v8*i32(3360)))<<13 + i64(0x17f33333)
 }
-func (m *Module) fn300(v0, v1, v2 int32) {
+func (m *module) fn300(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -52960,7 +52960,7 @@ l4:
 	}
 	m.memory[int64(uint32(t80))+3308] = byte(p79)
 }
-func (m *Module) fn301(v0, v1 int32, v2 int64, v3, v4 int32) int32 {
+func (m *module) fn301(v0, v1 int32, v2 int64, v3, v4 int32) int32 {
 	var v5 int64
 	var v6 int32
 	var v7 int32
@@ -53185,7 +53185,7 @@ l15:
 	m.g0 = v6 + i32(48)
 	return v8
 }
-func (m *Module) fn302(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
+func (m *module) fn302(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -54831,7 +54831,7 @@ l0:
 	m.g0 = v12 - i32(-64)
 	return v35
 }
-func (m *Module) fn303(v0 int32, v1 int64, v2, v3 int32) {
+func (m *module) fn303(v0 int32, v1 int64, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -55002,7 +55002,7 @@ func (m *Module) fn303(v0 int32, v1 int64, v2, v3 int32) {
 		}
 	}
 }
-func (m *Module) fn304(v0 int32) {
+func (m *module) fn304(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -55076,7 +55076,7 @@ func (m *Module) fn304(v0 int32) {
 		store32(m.memory[int64(uint32(v0))+32840:], uint32(v0+i32(32784)))
 	}
 }
-func (m *Module) fn305(v0, v1 int32, v2 int64, v3, v4, v5 int32) {
+func (m *module) fn305(v0, v1 int32, v2 int64, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	{
@@ -55265,7 +55265,7 @@ func (m *Module) fn305(v0, v1 int32, v2 int64, v3, v4, v5 int32) {
 		store32(m.memory[int64(uint32(v0))+4:], uint32(t33+i32(1)))
 	}
 }
-func (m *Module) fn306(v0, v1 int32) int32 {
+func (m *module) fn306(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	t0 := i32_div_s(v1, v0)
@@ -55296,7 +55296,7 @@ l0:
 l1:
 	return v1 + i32(120)
 }
-func (m *Module) fn307(v0 int32) {
+func (m *module) fn307(v0 int32) {
 	var v1 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+12:]))
 	v1 = t0
@@ -55310,7 +55310,7 @@ func (m *Module) fn307(v0 int32) {
 	store32(m.memory[int64(uint32(v0))+12:], uint32(v0+i32(8)))
 	store32(m.memory[int64(uint32(v0))+8:], uint32(i32(0)))
 }
-func (m *Module) fn308(v0 int32) {
+func (m *module) fn308(v0 int32) {
 	var v1 int32
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+12:]))
@@ -55340,7 +55340,7 @@ func (m *Module) fn308(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn309(v0, v1 int32) {
+func (m *module) fn309(v0, v1 int32) {
 	store64(m.memory[int64(uint32(v0))+12:], uint64(i64(0)))
 	store32(m.memory[int64(uint32(v0))+20:], uint32(i32(0)))
 	store64(m.memory[int64(uint32(v0))+4:], uint64(i64(0)))
@@ -55352,7 +55352,7 @@ func (m *Module) fn309(v0, v1 int32) {
 	}
 	store32(m.memory[uint32(t1):], uint32(p0))
 }
-func (m *Module) fn310(v0, v1 int32) {
+func (m *module) fn310(v0, v1 int32) {
 	var v2 int32
 	t0 := int32(load32(m.memory[int64(uint32(v1))+8:]))
 	t1 := v0
@@ -55374,7 +55374,7 @@ l0:
 	store32(m.memory[int64(uint32(t3))+8:], uint32(p2))
 	store32(m.memory[uint32(v0):], uint32(v2))
 }
-func (m *Module) fn311(v0 int32) {
+func (m *module) fn311(v0 int32) {
 	var v1 int32
 	var v2 int32
 	t1 := v0
@@ -55397,7 +55397,7 @@ l0:
 	store32(m.memory[uint32(v0):], uint32(v2))
 	store32(m.memory[int64(uint32(v0))+4:], uint32(v1))
 }
-func (m *Module) fn312(v0, v1 int32) {
+func (m *module) fn312(v0, v1 int32) {
 	var v2 int32
 	var v3 int32
 	{
@@ -55444,7 +55444,7 @@ l0:
 	t10 := int64(load64(m.memory[uint32(v1):]))
 	store64(m.memory[uint32(t9+v3<<3):], uint64(t10))
 }
-func (m *Module) fn313(v0, v1 int32) int32 {
+func (m *module) fn313(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := m.fn367(int64(v1), i32(4))
 	t1 := v0
@@ -55456,12 +55456,12 @@ func (m *Module) fn313(v0, v1 int32) int32 {
 	store32(m.memory[int64(uint32(v0))+4:], uint32(v1))
 	return i32(1)
 }
-func (m *Module) fn314(v0 int32) {
+func (m *module) fn314(v0 int32) {
 	t0 := int32(load32(m.memory[uint32(v0):]))
 	m.fn408(t0)
 	store64(m.memory[uint32(v0):], uint64(i64(0)))
 }
-func (m *Module) fn315(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
+func (m *module) fn315(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -55958,7 +55958,7 @@ l17:
 	m.fn408(v12)
 	return i32(0)
 }
-func (m *Module) fn316(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13 int32) int32 {
+func (m *module) fn316(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13 int32) int32 {
 	var v14 int32
 	var v15 int32
 	var v16 int32
@@ -58566,7 +58566,7 @@ l6:
 	m.g0 = v15 + i32(368)
 	return p1
 }
-func (m *Module) fn317(v0, v1, v2, v3, v4 int32) int32 {
+func (m *module) fn317(v0, v1, v2, v3, v4 int32) int32 {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -58776,7 +58776,7 @@ func (m *Module) fn317(v0, v1, v2, v3, v4 int32) int32 {
 	}
 	return p38
 }
-func (m *Module) fn318(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn318(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -59083,7 +59083,7 @@ l7:
 	}
 	memory_copy(m.memory, uint32(v4), uint32(v1), uint32(v12))
 }
-func (m *Module) fn319(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn319(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -59322,7 +59322,7 @@ func (m *Module) fn319(v0, v1, v2, v3, v4 int32) {
 		store32(m.memory[uint32(v4):], uint32(v5))
 	}
 }
-func (m *Module) fn320(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn320(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -59538,7 +59538,7 @@ func (m *Module) fn320(v0, v1, v2, v3, v4 int32) {
 		}
 	}
 }
-func (m *Module) fn321(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12 int32) {
+func (m *module) fn321(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12 int32) {
 	var v13 int32
 	var v14 int32
 	var v15 int32
@@ -59972,7 +59972,7 @@ func (m *Module) fn321(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12 int
 		}
 	}
 }
-func (m *Module) fn322(v0, v1, v2 int32) int32 {
+func (m *module) fn322(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -61116,7 +61116,7 @@ l2:
 	m.g0 = v4 + i32(1728)
 	return p1
 }
-func (m *Module) fn323(v0, v1 int32) int32 {
+func (m *module) fn323(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -68387,7 +68387,7 @@ l2:
 	}
 	return p1622
 }
-func (m *Module) fn324(v0, v1, v2 int32) int32 {
+func (m *module) fn324(v0, v1, v2 int32) int32 {
 	var v3 int64
 	var v4 int32
 	var v5 int64
@@ -68446,7 +68446,7 @@ l2:
 	store32(m.memory[int64(uint32(v0))+20:], uint32((v1+v4<<2+i32(31))&i32(-32)))
 	return i32(1)
 }
-func (m *Module) fn325(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10 int32) int32 {
+func (m *module) fn325(v0, v1, v2, v3, v4, v5, v6, v7, v8, v9, v10 int32) int32 {
 	var v11 int32
 	var v12 int32
 	var v13 int32
@@ -68933,7 +68933,7 @@ l0:
 	}
 	return p96
 }
-func (m *Module) fn326(v0, v1 int32) int32 {
+func (m *module) fn326(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -69124,7 +69124,7 @@ l4:
 l9:
 	return v10
 }
-func (m *Module) fn327(v0, v1, v2, v3 int32) {
+func (m *module) fn327(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -69694,7 +69694,7 @@ func (m *Module) fn327(v0, v1, v2, v3 int32) {
 l2:
 	m.g0 = v5 + i32(224)
 }
-func (m *Module) fn328(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
+func (m *module) fn328(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -69905,7 +69905,7 @@ func (m *Module) fn328(v0, v1, v2, v3, v4, v5, v6 int32) int32 {
 	m.g0 = v12 + i32(16)
 	return v15
 }
-func (m *Module) fn329(v0, v1 int32) int32 {
+func (m *module) fn329(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -71275,7 +71275,7 @@ l0:
 	m.g0 = v7 + i32(496)
 	return p338
 }
-func (m *Module) fn330(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
+func (m *module) fn330(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
 	var v9 int32
 	var v10 int32
 	var v11 int32
@@ -71450,7 +71450,7 @@ l4:
 	m.g0 = v9 + i32(320)
 	return v1
 }
-func (m *Module) fn331(v0 int32) {
+func (m *module) fn331(v0 int32) {
 	var v1 int32
 	var v2 int32
 	m.fn378(v0 + i32(56))
@@ -71469,7 +71469,7 @@ func (m *Module) fn331(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn332(v0 int32) {
+func (m *module) fn332(v0 int32) {
 	var v1 int32
 	var v2 int32
 	if v0 != 0 {
@@ -71500,7 +71500,7 @@ func (m *Module) fn332(v0 int32) {
 		store32(m.memory[int64(uint32(v0))+4:], uint32(v0))
 	}
 }
-func (m *Module) fn333(v0, v1, v2 int32) int32 {
+func (m *module) fn333(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -72764,7 +72764,7 @@ l70:
 l3:
 	return p22
 }
-func (m *Module) fn334(v0 int32, v1 float32) {
+func (m *module) fn334(v0 int32, v1 float32) {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -73647,7 +73647,7 @@ l27:
 	store32(m.memory[int64(uint32(v0))+22556:], uint32(i32(0)))
 	m.g0 = v10 + i32(16)
 }
-func (m *Module) fn335(v0 int32) int32 {
+func (m *module) fn335(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -73901,7 +73901,7 @@ l5:
 	store32(m.memory[int64(uint32(v0))+19108:], uint32(v9))
 	return v6
 }
-func (m *Module) fn336(v0, v1, v2 int32) int32 {
+func (m *module) fn336(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -74108,7 +74108,7 @@ func (m *Module) fn336(v0, v1, v2 int32) int32 {
 	}
 	return i32(1)
 }
-func (m *Module) fn337(v0 int32) {
+func (m *module) fn337(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -74252,7 +74252,7 @@ func (m *Module) fn337(v0 int32) {
 		m.memory[uint32(t31)] = byte(v2)
 	}
 }
-func (m *Module) fn338(v0, v1 int32) int32 {
+func (m *module) fn338(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -74727,7 +74727,7 @@ l0:
 	}
 	return i32(0)
 }
-func (m *Module) fn339(v0, v1, v2 int32) int32 {
+func (m *module) fn339(v0, v1, v2 int32) int32 {
 	var v3 int32
 	v3 = i32(1)
 	{
@@ -74758,7 +74758,7 @@ func (m *Module) fn339(v0, v1, v2 int32) int32 {
 l0:
 	return v3
 }
-func (m *Module) fn340(v0 int32) {
+func (m *module) fn340(v0 int32) {
 	var v1 int32
 	var v2 float32
 	var v3 int64
@@ -74920,7 +74920,7 @@ func (m *Module) fn340(v0 int32) {
 		store32(m.memory[int64(uint32(v1))+32:], uint32(t41))
 	}
 }
-func (m *Module) fn341(v0 int32) int32 {
+func (m *module) fn341(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	v1 = i32(1)
@@ -74941,7 +74941,7 @@ func (m *Module) fn341(v0 int32) int32 {
 	m.fn408(v0)
 	return v1
 }
-func (m *Module) fn342(v0, v1, v2 int32) {
+func (m *module) fn342(v0, v1, v2 int32) {
 	var v3 int64
 	var v4 int32
 	store32(m.memory[int64(uint32(v0))+28:], uint32(i32(0)))
@@ -74976,7 +74976,7 @@ func (m *Module) fn342(v0, v1, v2 int32) {
 	}
 	store32(m.memory[int64(uint32(v0))+28:], uint32(i32(1)))
 }
-func (m *Module) fn343(v0 int32) {
+func (m *module) fn343(v0 int32) {
 	var v1 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+16:]))
 	v1 = t0
@@ -75001,7 +75001,7 @@ func (m *Module) fn343(v0 int32) {
 	}
 	store32(m.memory[int64(uint32(v0))+12:], uint32(i32(0)))
 }
-func (m *Module) fn344(v0, v1 int32) int32 {
+func (m *module) fn344(v0, v1 int32) int32 {
 	var v2 int64
 	var v3 int32
 	var v4 int32
@@ -75102,7 +75102,7 @@ l3:
 	store32(m.memory[int64(uint32(v0))+8:], uint32(v4))
 	return v6
 }
-func (m *Module) fn345(v0, v1 int32) int32 {
+func (m *module) fn345(v0, v1 int32) int32 {
 	var v2 int64
 	var v3 int32
 	var v4 int32
@@ -75185,7 +75185,7 @@ l1:
 	}
 	return p20
 }
-func (m *Module) fn346(v0, v1, v2 int32) {
+func (m *module) fn346(v0, v1, v2 int32) {
 	var v3 int64
 	store64(m.memory[int64(uint32(v0))+20:], uint64(i64(0)))
 	store64(m.memory[uint32(v0):], uint64(i64(0)))
@@ -75259,7 +75259,7 @@ l0:
 	}
 	store32(m.memory[int64(uint32(t18))+16:], uint32(p17))
 }
-func (m *Module) fn347(v0 int32) {
+func (m *module) fn347(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -75348,7 +75348,7 @@ func (m *Module) fn347(v0 int32) {
 		store64(m.memory[int64(uint32(v0))+20:], uint64(i64(0x100000000)))
 	}
 }
-func (m *Module) fn348(v0, v1 int32) int32 {
+func (m *module) fn348(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int64
 	var v4 int32
@@ -75431,7 +75431,7 @@ l0:
 l1:
 	return v7
 }
-func (m *Module) fn349(v0, v1 int32) int32 {
+func (m *module) fn349(v0, v1 int32) int32 {
 	var v2 int32
 	t0 := m.fn368(int64(i32_shl(i32(1), v1)), i32(4))
 	t1 := v0
@@ -75444,19 +75444,19 @@ func (m *Module) fn349(v0, v1 int32) int32 {
 	store32(m.memory[int64(uint32(v0))+4:], uint32(i32(32)-v1))
 	return i32(1)
 }
-func (m *Module) fn350(v0 int32) {
+func (m *module) fn350(v0 int32) {
 	if v0 != 0 {
 		t0 := int32(load32(m.memory[uint32(v0):]))
 		m.fn408(t0)
 		store32(m.memory[uint32(v0):], uint32(i32(0)))
 	}
 }
-func (m *Module) fn351(v0 int32) {
+func (m *module) fn351(v0 int32) {
 	if v0 != 0 {
 		m.fn408(v0)
 	}
 }
-func (m *Module) fn352(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn352(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -75532,7 +75532,7 @@ l1:
 	m.g0 = v8 + i32(1024)
 	return v4
 }
-func (m *Module) fn353(v0, v1, v2, v3, v4 int32) int32 {
+func (m *module) fn353(v0, v1, v2, v3, v4 int32) int32 {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -76087,7 +76087,7 @@ func (m *Module) fn353(v0, v1, v2, v3, v4 int32) int32 {
 l0:
 	return v14
 }
-func (m *Module) fn354(v0, v1 int32) int32 {
+func (m *module) fn354(v0, v1 int32) int32 {
 	var v2 int32
 	var _ int32
 	store32(m.memory[int64(uint32(v1))+8:], uint32(i32(0)))
@@ -76106,7 +76106,7 @@ func (m *Module) fn354(v0, v1 int32) int32 {
 	}
 	return p2
 }
-func (m *Module) fn355(v0 int32) {
+func (m *module) fn355(v0 int32) {
 	var v1 int32
 	{
 		if v0 == 0 {
@@ -76134,7 +76134,7 @@ func (m *Module) fn355(v0 int32) {
 		}
 	}
 }
-func (m *Module) fn356(v0, v1 int32) int32 {
+func (m *module) fn356(v0, v1 int32) int32 {
 	t0 := int32(load32(m.memory[uint32(v0):]))
 	t1 := int32(load32(m.memory[uint32(v1):]))
 	p2 := i32(1)
@@ -76143,7 +76143,7 @@ func (m *Module) fn356(v0, v1 int32) int32 {
 	}
 	return p2
 }
-func (m *Module) fn357(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
+func (m *module) fn357(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
 	var v9 int64
 	var v10 int32
 	var v11 int64
@@ -76235,7 +76235,7 @@ func (m *Module) fn357(v0, v1, v2, v3, v4, v5, v6, v7, v8 int32) int32 {
 	}
 	return p0
 }
-func (m *Module) fn358(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn358(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int64
@@ -76280,7 +76280,7 @@ l1:
 l2:
 	return v1
 }
-func (m *Module) fn359(v0, v1, v2, v3 int32) int32 {
+func (m *module) fn359(v0, v1, v2, v3 int32) int32 {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -76362,7 +76362,7 @@ l3:
 l0:
 	return v6
 }
-func (m *Module) fn360(v0 int32) int32 {
+func (m *module) fn360(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -76392,7 +76392,7 @@ func (m *Module) fn360(v0 int32) int32 {
 l0:
 	return v1
 }
-func (m *Module) fn361(v0 int32, v1 float32) {
+func (m *module) fn361(v0 int32, v1 float32) {
 	memory_copy(m.memory, uint32(v0+i32(8)), uint32(i32(94240)), uint32(i32(220)))
 	store64(m.memory[uint32(v0):], uint64(i64(0x1f00000000)))
 	t1 := v0
@@ -76406,12 +76406,12 @@ func (m *Module) fn361(v0 int32, v1 float32) {
 	}
 	store32(m.memory[int64(uint32(t1))+228:], uint32(p2))
 }
-func (m *Module) fn362(v0 int32) {
+func (m *module) fn362(v0 int32) {
 	store64(m.memory[int64(uint32(v0))+16:], uint64(i64(0)))
 	store64(m.memory[int64(uint32(v0))+8:], uint64(i64(0)))
 	store64(m.memory[uint32(v0):], uint64(i64(0)))
 }
-func (m *Module) fn363(v0 int32) int32 {
+func (m *module) fn363(v0 int32) int32 {
 	store32(m.memory[int64(uint32(v0))+20:], uint32(i32(0)))
 	t0 := int32(load32(m.memory[int64(uint32(v0))+4:]))
 	if t0 == 0 {
@@ -76419,7 +76419,7 @@ func (m *Module) fn363(v0 int32) int32 {
 	}
 	return i32(1)
 }
-func (m *Module) fn364(v0 int32) int32 {
+func (m *module) fn364(v0 int32) int32 {
 	t0 := int32(load32(m.memory[int64(uint32(v0))+20:]))
 	var p1 int32
 	if t0 == 0 {
@@ -76427,7 +76427,7 @@ func (m *Module) fn364(v0 int32) int32 {
 	}
 	return p1
 }
-func (m *Module) fn365(v0 int32) {
+func (m *module) fn365(v0 int32) {
 	var v1 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+8:]))
 	v1 = t0
@@ -76445,10 +76445,10 @@ func (m *Module) fn365(v0 int32) {
 		store32(m.memory[int64(uint32(t5))+20:], uint32(t4|p6))
 	}
 }
-func (m *Module) fn366(v0 int32) {
+func (m *module) fn366(v0 int32) {
 	store32(m.memory[int64(uint32(v0))+4:], uint32(i32(0)))
 }
-func (m *Module) fn367(v0 int64, v1 int32) int32 {
+func (m *module) fn367(v0 int64, v1 int32) int32 {
 	var _ int64
 	var v3 int64
 	var v4 int32
@@ -76470,7 +76470,7 @@ func (m *Module) fn367(v0 int64, v1 int32) int32 {
 l0:
 	return v4
 }
-func (m *Module) fn368(v0 int64, v1 int32) int32 {
+func (m *module) fn368(v0 int64, v1 int32) int32 {
 	var v2 int32
 	var _ int64
 	var v4 int64
@@ -76528,7 +76528,7 @@ l2:
 l0:
 	return v2
 }
-func (m *Module) fn369(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn369(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	if v5 <= i32(0) {
@@ -76588,7 +76588,7 @@ l3:
 		}
 	}
 }
-func (m *Module) fn370(v0, v1, v2 int32) int32 {
+func (m *module) fn370(v0, v1, v2 int32) int32 {
 	var v3 int32
 	t0 := int32(load32(m.memory[uint32(v0):]))
 	v3 = t0
@@ -76624,7 +76624,7 @@ func (m *Module) fn370(v0, v1, v2 int32) int32 {
 l0:
 	return v1
 }
-func (m *Module) fn371(v0 int32) {
+func (m *module) fn371(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -76736,7 +76736,7 @@ func (m *Module) fn371(v0 int32) {
 	t25 := int32(load32(m.memory[int64(uint32(v0))+8:]))
 	store32(m.memory[int64(uint32(v0))+8:], uint32(t25+i32(1)))
 }
-func (m *Module) fn372(v0, v1 int32) int32 {
+func (m *module) fn372(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	t0 := int32(load32(m.memory[uint32(v0):]))
@@ -76770,7 +76770,7 @@ func (m *Module) fn372(v0, v1 int32) int32 {
 l0:
 	return v1
 }
-func (m *Module) fn373(v0, v1, v2 int32) {
+func (m *module) fn373(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	v3 = i32_shl(i32(1), v2-i32(1))
@@ -76811,7 +76811,7 @@ l1:
 		}
 	}
 }
-func (m *Module) fn374(v0, v1, v2 int32) {
+func (m *module) fn374(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	t0 := int32(load32(m.memory[uint32(v0):]))
@@ -76926,7 +76926,7 @@ l5:
 		}
 	}
 }
-func (m *Module) fn375(v0, v1 int32) int32 {
+func (m *module) fn375(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	store64(m.memory[int64(uint32(v0))+16:], uint64(i64(0)))
@@ -76965,7 +76965,7 @@ func (m *Module) fn375(v0, v1 int32) int32 {
 	}
 	return i32(1)
 }
-func (m *Module) fn376(v0 int32) {
+func (m *module) fn376(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -77004,7 +77004,7 @@ l1:
 	m.fn371(v0)
 	_ = int32(load32(m.memory[int64(uint32(v0))+16:]))
 }
-func (m *Module) fn377(v0, v1, v2 int32) int32 {
+func (m *module) fn377(v0, v1, v2 int32) int32 {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -77078,7 +77078,7 @@ func (m *Module) fn377(v0, v1, v2 int32) int32 {
 	}
 	return p1
 }
-func (m *Module) fn378(v0 int32) {
+func (m *module) fn378(v0 int32) {
 	if v0 != 0 {
 		t0 := int32(load32(m.memory[int64(uint32(v0))+16:]))
 		m.fn408(t0)
@@ -77088,7 +77088,7 @@ func (m *Module) fn378(v0 int32) {
 		store64(m.memory[uint32(v0):], uint64(i64(0)))
 	}
 }
-func (m *Module) fn379(v0, v1 int32) int32 {
+func (m *module) fn379(v0, v1 int32) int32 {
 	var v2 int32
 	store64(m.memory[int64(uint32(v0))+16:], uint64(i64(0)))
 	store64(m.memory[int64(uint32(v0))+8:], uint64(i64(0)))
@@ -77107,7 +77107,7 @@ func (m *Module) fn379(v0, v1 int32) int32 {
 	store32(m.memory[int64(uint32(v0))+8:], uint32(v1))
 	return i32(1)
 }
-func (m *Module) fn380(v0, v1 int32) int32 {
+func (m *module) fn380(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	var v4 int32
@@ -77190,7 +77190,7 @@ l1:
 	store32(m.memory[int64(uint32(v1))+12:], uint32(t14+v6))
 	return i32(1)
 }
-func (m *Module) fn381(v0 int32) {
+func (m *module) fn381(v0 int32) {
 	if v0 != 0 {
 		t0 := int32(load32(m.memory[int64(uint32(v0))+8:]))
 		m.fn408(t0)
@@ -77199,7 +77199,7 @@ func (m *Module) fn381(v0 int32) {
 		store64(m.memory[uint32(v0):], uint64(i64(0)))
 	}
 }
-func (m *Module) fn382(v0, v1 int32) {
+func (m *module) fn382(v0, v1 int32) {
 	var v2 int64
 	var v3 int64
 	var v4 int64
@@ -77219,7 +77219,7 @@ func (m *Module) fn382(v0, v1 int32) {
 	store64(m.memory[int64(uint32(v1))+16:], uint64(v2))
 	store64(m.memory[int64(uint32(v1))+8:], uint64(v3))
 }
-func (m *Module) fn383(v0, v1, v2 int32) {
+func (m *module) fn383(v0, v1, v2 int32) {
 	var v3 int32
 	var v4 int32
 	var v5 int32
@@ -77343,7 +77343,7 @@ func (m *Module) fn383(v0, v1, v2 int32) {
 		store32(m.memory[uint32(v0):], uint32(i32_shl(v1, v3)|v6))
 	}
 }
-func (m *Module) fn384(v0 int32) int32 {
+func (m *module) fn384(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -77443,7 +77443,7 @@ l0:
 	t22 := int32(load32(m.memory[int64(uint32(v0))+8:]))
 	return t22
 }
-func (m *Module) fn385(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn385(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -78552,7 +78552,7 @@ l40:
 	}
 	m.g0 = v10 + i32(128)
 }
-func (m *Module) fn386(v0, v1 int32) int32 {
+func (m *module) fn386(v0, v1 int32) int32 {
 	var v2 int32
 	var v3 int32
 	t0 := int32(load32(m.memory[uint32(v0):]))
@@ -78574,7 +78574,7 @@ func (m *Module) fn386(v0, v1 int32) int32 {
 	}
 	return p5
 }
-func (m *Module) fn387(v0, v1, v2, v3 int32) {
+func (m *module) fn387(v0, v1, v2, v3 int32) {
 	var v4 int32
 	t0 := int32(load32(m.memory[int64(uint32(v0))+8:]))
 	v4 = t0
@@ -78598,7 +78598,7 @@ func (m *Module) fn387(v0, v1, v2, v3 int32) {
 	t6 := int32(load32(m.memory[int64(uint32(v0))+4:]))
 	m.memory[uint32(v2+t6)] = byte(v3)
 }
-func (m *Module) fn388(v0, v1, v2, v3 int32) {
+func (m *module) fn388(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -78648,7 +78648,7 @@ func (m *Module) fn388(v0, v1, v2, v3 int32) {
 		store16(m.memory[uint32(v2):], uint16(t9+(t10-t11)))
 	}
 }
-func (m *Module) fn389(v0, v1, v2, v3, v4 int32) int64 {
+func (m *module) fn389(v0, v1, v2, v3, v4 int32) int64 {
 	var v5 int32
 	var v6 int64
 	var v7 int32
@@ -78687,7 +78687,7 @@ l0:
 	}
 	return v6
 }
-func (m *Module) fn390(v0, v1, v2, v3, v4, v5 int32) {
+func (m *module) fn390(v0, v1, v2, v3, v4, v5 int32) {
 	var v6 int32
 	var v7 int32
 	var v8 int32
@@ -78744,7 +78744,7 @@ func (m *Module) fn390(v0, v1, v2, v3, v4, v5 int32) {
 		}
 	}
 }
-func (m *Module) fn391() {
+func (m *module) fn391() {
 	var v0 float64
 	var v1 int32
 	var v2 float64
@@ -78804,7 +78804,7 @@ func (m *Module) fn391() {
 		store32(m.memory[uint32(i32(115044)):], uint32(t10))
 	}
 }
-func (m *Module) fn392(v0, v1 int32) int32 {
+func (m *module) fn392(v0, v1 int32) int32 {
 	var v2 float32
 	var v3 float32
 	var v4 float64
@@ -79047,7 +79047,7 @@ func (m *Module) fn392(v0, v1 int32) int32 {
 l5:
 	return v0
 }
-func (m *Module) fn393(v0, v1 int32) int32 {
+func (m *module) fn393(v0, v1 int32) int32 {
 	var v2 float32
 	var v3 float32
 	var v4 float64
@@ -79282,7 +79282,7 @@ func (m *Module) fn393(v0, v1 int32) int32 {
 l0:
 	return v0 & i32(0xffff)
 }
-func (m *Module) fn394(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn394(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -79327,7 +79327,7 @@ l0:
 		store16(m.memory[uint32(v0):], uint16(t6))
 	}
 }
-func (m *Module) fn395(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn395(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -79418,7 +79418,7 @@ l0:
 		}
 	}
 }
-func (m *Module) fn396(v0 float64) float64 {
+func (m *module) fn396(v0 float64) float64 {
 	var v1 float64
 	var v2 int64
 	var v3 float64
@@ -79572,7 +79572,7 @@ func fn397(v0 float64) float64 {
 l1:
 	return v0
 }
-func (m *Module) fn398(v0, v1 float64) float64 {
+func (m *module) fn398(v0, v1 float64) float64 {
 	var v2 int64
 	var v3 float64
 	var v4 int64
@@ -79880,7 +79880,7 @@ func fn399(v0 int64) int32 {
 l0:
 	return p0
 }
-func (m *Module) fn400(v0, v1, v2, v3 int32) {
+func (m *module) fn400(v0, v1, v2, v3 int32) {
 	var v4 int32
 	var v5 int32
 	var v6 int32
@@ -80108,7 +80108,7 @@ func (m *Module) fn400(v0, v1, v2, v3 int32) {
 l0:
 	m.g0 = v4 + i32(208)
 }
-func (m *Module) fn401(v0, v1, v2, v3, v4 int32) {
+func (m *module) fn401(v0, v1, v2, v3, v4 int32) {
 	var v5 int32
 	var v6 int32
 	var v7 int32
@@ -80236,7 +80236,7 @@ l4:
 l0:
 	m.g0 = v8 + i32(496)
 }
-func (m *Module) fn402(v0, v1, v2, v3, v4, v5, v6 int32) {
+func (m *module) fn402(v0, v1, v2, v3, v4, v5, v6 int32) {
 	var v7 int32
 	var v8 int32
 	var v9 int32
@@ -80494,11 +80494,11 @@ l7:
 l6:
 	m.g0 = v13 + i32(496)
 }
-func (m *Module) fn403(v0, v1, v2 int32) int32 {
+func (m *module) fn403(v0, v1, v2 int32) int32 {
 	t0 := m.t0[uint(v2)].(func(int32, int32) int32)(v0, v1)
 	return t0
 }
-func (m *Module) fn404(v0 int32) int32 {
+func (m *module) fn404(v0 int32) int32 {
 	var v1 int32
 	if v0 == 0 {
 		t0 := int32(len(m.memory) >> 16)
@@ -80524,11 +80524,11 @@ func (m *Module) fn404(v0 int32) int32 {
 l0:
 	panic("unreachable")
 }
-func (m *Module) Xmalloc(v0 int32) int32 {
+func (m *module) Xmalloc(v0 int32) int32 {
 	t0 := m.fn406(v0)
 	return t0
 }
-func (m *Module) fn406(v0 int32) int32 {
+func (m *module) fn406(v0 int32) int32 {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -82004,10 +82004,10 @@ l2:
 	m.g0 = v10 + i32(16)
 	return v1
 }
-func (m *Module) Xfree(v0 int32) {
+func (m *module) Xfree(v0 int32) {
 	m.fn408(v0)
 }
-func (m *Module) fn408(v0 int32) {
+func (m *module) fn408(v0 int32) {
 	var v1 int32
 	var v2 int32
 	var v3 int32
@@ -82431,7 +82431,7 @@ func (m *Module) fn408(v0 int32) {
 		store32(m.memory[uint32(i32(115196)):], uint32(p64))
 	}
 }
-func (m *Module) Xmemory() Memory {
+func (m *module) Xmemory() memory {
 	return (*wasmMemory)(&m.memory)
 }
 

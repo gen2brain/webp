@@ -41,9 +41,9 @@ const DefaultMethod = 4
 
 // Options are the encoding parameters.
 type Options struct {
-	// Quality in the range [0,100]. Quality of 100 implies Lossless. Default is 75.
+	// Quality in the range [0,100]. Default is 75.
 	Quality int
-	// Lossless indicates whether to use the lossless compression. Lossless will ignore quality.
+	// Lossless enables lossless compression. Lossless ignores quality.
 	Lossless bool
 	// Method is quality/speed trade-off (0=fast, 6=slower-better). Default is 4.
 	Method int

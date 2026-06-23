@@ -12,7 +12,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	var data []byte
 	var err error
 
-	mod := New()
+	mod := newModule()
 	mod.X_initialize()
 
 	if configOnly {
@@ -183,7 +183,7 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 }
 
 func encode(w io.Writer, m image.Image, quality, method int, lossless, exact bool) error {
-	mod := New()
+	mod := newModule()
 	mod.X_initialize()
 
 	var data []byte
@@ -286,7 +286,7 @@ func encode(w io.Writer, m image.Image, quality, method int, lossless, exact boo
 	return nil
 }
 
-func (m *Module) write(ptr int32, data []byte) bool {
+func (m *module) write(ptr int32, data []byte) bool {
 	if ptr < 0 || int(ptr)+len(data) > len(m.memory) {
 		return false
 	}
@@ -296,7 +296,7 @@ func (m *Module) write(ptr int32, data []byte) bool {
 	return true
 }
 
-func (m *Module) read(ptr, size int32) ([]byte, bool) {
+func (m *module) read(ptr, size int32) ([]byte, bool) {
 	if ptr < 0 || size < 0 || int(ptr)+int(size) > len(m.memory) {
 		return nil, false
 	}
@@ -304,7 +304,7 @@ func (m *Module) read(ptr, size int32) ([]byte, bool) {
 	return m.memory[ptr : ptr+size : ptr+size], true
 }
 
-func (m *Module) readUint32(ptr int32) (uint32, bool) {
+func (m *module) readUint32(ptr int32) (uint32, bool) {
 	if ptr < 0 || int(ptr)+4 > len(m.memory) {
 		return 0, false
 	}
@@ -312,7 +312,7 @@ func (m *Module) readUint32(ptr int32) (uint32, bool) {
 	return load32(m.memory[ptr:]), true
 }
 
-func (m *Module) readUint64(ptr int32) (uint64, bool) {
+func (m *module) readUint64(ptr int32) (uint64, bool) {
 	if ptr < 0 || int(ptr)+8 > len(m.memory) {
 		return 0, false
 	}
