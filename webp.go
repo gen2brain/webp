@@ -4,6 +4,7 @@ package webp
 //go:generate wasm2go -pkg webp -unsafe -o libwebp.go lib/webp.wasm
 
 import (
+	"bytes"
 	"errors"
 	"image"
 	"image/draw"
@@ -39,7 +40,7 @@ const DefaultQuality = 75
 // DefaultMethod is the default method encoding parameter.
 const DefaultMethod = 4
 
-// Options are the encoding parameters.
+// Options are the encoding parameters, plus AutoRotate which applies to Decode.
 type Options struct {
 	// Quality in the range [0,100]. Default is 75.
 	Quality int
@@ -49,23 +50,38 @@ type Options struct {
 	Method int
 	// Exact preserve the exact RGB values in transparent area.
 	Exact bool
+	// AutoRotate applies the EXIF orientation to the decoded image (Decode/DecodeAll only).
+	AutoRotate bool
 }
 
-// Decode reads a WEBP image from r and returns it as an image.Image.
-func Decode(r io.Reader) (image.Image, error) {
-	var err error
-	var ret *WEBP
-
+// decodeWEBP dispatches to the dynamic (system libwebp) or wasm backend.
+func decodeWEBP(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error) {
 	if dynamic {
-		ret, _, err = decodeDynamic(r, false, false)
+		return decodeDynamic(r, configOnly, decodeAll)
+	}
+
+	return decode(r, configOnly, decodeAll)
+}
+
+// Decode reads a WEBP image from r; pass Options{AutoRotate: true} to apply the EXIF orientation.
+func Decode(r io.Reader, opts ...Options) (image.Image, error) {
+	if len(opts) > 0 && opts[0].AutoRotate {
+		data, err := io.ReadAll(r)
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		ret, _, err = decode(r, false, false)
+
+		ret, _, err := decodeWEBP(bytes.NewReader(data), false, false)
 		if err != nil {
 			return nil, err
 		}
+
+		return applyOrientation(ret.Image[0], exifOrientation(data)), nil
+	}
+
+	ret, _, err := decodeWEBP(r, false, false)
+	if err != nil {
+		return nil, err
 	}
 
 	return ret.Image[0], nil
@@ -73,39 +89,38 @@ func Decode(r io.Reader) (image.Image, error) {
 
 // DecodeConfig returns the color model and dimensions of a WEBP image without decoding the entire image.
 func DecodeConfig(r io.Reader) (image.Config, error) {
-	var err error
-	var cfg image.Config
-
-	if dynamic {
-		_, cfg, err = decodeDynamic(r, true, false)
-		if err != nil {
-			return image.Config{}, err
-		}
-	} else {
-		_, cfg, err = decode(r, true, false)
-		if err != nil {
-			return image.Config{}, err
-		}
+	_, cfg, err := decodeWEBP(r, true, false)
+	if err != nil {
+		return image.Config{}, err
 	}
 
 	return cfg, nil
 }
 
-// DecodeAll reads a WEBP image from r and returns the sequential frames and timing information.
-func DecodeAll(r io.Reader) (*WEBP, error) {
-	var err error
-	var ret *WEBP
+// DecodeAll returns the sequential frames and timing; pass Options{AutoRotate: true} to orient each frame.
+func DecodeAll(r io.Reader, opts ...Options) (*WEBP, error) {
+	if len(opts) > 0 && opts[0].AutoRotate {
+		data, err := io.ReadAll(r)
+		if err != nil {
+			return nil, err
+		}
 
-	if dynamic {
-		ret, _, err = decodeDynamic(r, false, true)
+		ret, _, err := decodeWEBP(bytes.NewReader(data), false, true)
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		ret, _, err = decode(r, false, true)
-		if err != nil {
-			return nil, err
+
+		o := exifOrientation(data)
+		for i := range ret.Image {
+			ret.Image[i] = applyOrientation(ret.Image[i], o)
 		}
+
+		return ret, nil
+	}
+
+	ret, _, err := decodeWEBP(r, false, true)
+	if err != nil {
+		return nil, err
 	}
 
 	return ret, nil
@@ -171,5 +186,9 @@ func imageToNRGBA(src image.Image) *image.NRGBA {
 }
 
 func init() {
-	image.RegisterFormat("webp", "RIFF????WEBPVP8", Decode, DecodeConfig)
+	decodeWrapper := func(r io.Reader) (image.Image, error) {
+		return Decode(r)
+	}
+
+	image.RegisterFormat("webp", "RIFF????WEBPVP8", decodeWrapper, DecodeConfig)
 }
