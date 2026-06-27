@@ -4,9 +4,11 @@
 #include "webp/decode.h"
 #include "webp/encode.h"
 #include "webp/demux.h"
+#include "webp/mux.h"
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint32_t *animation, uint8_t *delay, uint8_t *out);
 uint8_t* encode(uint8_t *rgb_in, int width, int height, size_t *size, int colorspace, int quality, int method, int lossless, int exact);
+uint8_t* encode_animation(uint8_t *frames, int width, int height, int count, int *delays, int loop_count, int quality, int method, int lossless, int exact, size_t *size);
 
 int decode(uint8_t *webp_in, int webp_in_size, int config_only, int decode_all, uint32_t *width, uint32_t *height, uint32_t *count, uint32_t *animation, uint8_t *delay, uint8_t *out) {
 
@@ -183,4 +185,82 @@ uint8_t* encode(uint8_t *in, int w, int h, size_t *size, int colorspace, int qua
     WebPMemoryWriterClear(&writer);
 
     return out;
+}
+
+uint8_t* encode_animation(uint8_t *frames, int width, int height, int count, int *delays, int loop_count, int quality, int method, int lossless, int exact, size_t *size) {
+    *size = 0;
+
+    WebPAnimEncoderOptions enc_options;
+    if(!WebPAnimEncoderOptionsInit(&enc_options)) {
+        return NULL;
+    }
+    enc_options.anim_params.loop_count = loop_count;
+
+    WebPAnimEncoder *enc = WebPAnimEncoderNew(width, height, &enc_options);
+    if(enc == NULL) {
+        return NULL;
+    }
+
+    WebPConfig config;
+    if(!WebPConfigInit(&config)) {
+        WebPAnimEncoderDelete(enc);
+        return NULL;
+    }
+    config.quality = quality;
+    config.method = method;
+    config.lossless = lossless;
+    config.exact = exact;
+
+    size_t frame_size = (size_t)width * height * 4;
+    int timestamp = 0;
+    int ok = 1;
+
+    for(int i = 0; i < count; i++) {
+        WebPPicture picture;
+        if(!WebPPictureInit(&picture)) {
+            ok = 0;
+            break;
+        }
+
+        picture.use_argb = 1;
+        picture.width = width;
+        picture.height = height;
+
+        if(!WebPPictureImportRGBA(&picture, frames + (size_t)i * frame_size, width * 4)) {
+            WebPPictureFree(&picture);
+            ok = 0;
+            break;
+        }
+
+        if(!WebPAnimEncoderAdd(enc, &picture, timestamp, &config)) {
+            WebPPictureFree(&picture);
+            ok = 0;
+            break;
+        }
+
+        WebPPictureFree(&picture);
+        timestamp += delays[i];
+    }
+
+    if(!ok) {
+        WebPAnimEncoderDelete(enc);
+        return NULL;
+    }
+
+    WebPAnimEncoderAdd(enc, NULL, timestamp, NULL);
+
+    WebPData webp_data;
+    WebPDataInit(&webp_data);
+
+    if(!WebPAnimEncoderAssemble(enc, &webp_data)) {
+        WebPAnimEncoderDelete(enc);
+        WebPDataClear(&webp_data);
+        return NULL;
+    }
+
+    WebPAnimEncoderDelete(enc);
+
+    *size = webp_data.size;
+
+    return (uint8_t*)webp_data.bytes;
 }

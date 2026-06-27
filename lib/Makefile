@@ -11,7 +11,13 @@ CMAKE_TOOLCHAIN_FILE=$(WASI_SDK_PATH)/share/cmake/wasi-sdk.cmake
 
 BIN := webp.wasm
 
-all: $(BIN)
+all: $(BIN) wasm2go
+
+wasm2go: ../libwebp.go
+
+../libwebp.go: $(BIN)
+	wasm2go -pkg webp -unsafe -o ../libwebp.go $(BIN)
+	sed -i -E '/^const data[0-9]/! { s/\bModule\b/module/g; s/\bMemory\b/memory/g; s/\bNew\b/newModuleRaw/g; }' ../libwebp.go
 
 $(LIBWEBP_SRC):
 	git clone -b $(LIBWEBP_VERSION) --depth 1 --recursive --jobs `nproc` https://github.com/webmproject/libwebp
@@ -45,6 +51,7 @@ $(BIN): $(LIBWEBP_BUILD)/libwebp.a
 		-Wl,--export=free \
 		-Wl,--export=decode \
 		-Wl,--export=encode \
+		-Wl,--export=encode_animation \
 		-mexec-model=reactor \
 		-mnontrapping-fptoint \
 		-I${LIBWEBP_SRC}/src \
@@ -52,11 +59,12 @@ $(BIN): $(LIBWEBP_BUILD)/libwebp.a
 		-o $@ \
 		-Wall \
 		webp.c \
+		${LIBWEBP_BUILD}/libwebpmux.a \
 		${LIBWEBP_BUILD}/libwebpdemux.a \
 		${LIBWEBP_BUILD}/libwebp.a \
 		${LIBWEBP_BUILD}/libsharpyuv.a
 
-.PHONY: clean
+.PHONY: all wasm2go clean
 
 clean:
 	-rm -rf $(LIBWEBP_SRC)

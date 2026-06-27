@@ -1,6 +1,7 @@
 package webp
 
 import (
+	"encoding/binary"
 	"fmt"
 	"image"
 	"image/color"
@@ -13,7 +14,6 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 	var err error
 
 	mod := newModule()
-	mod.X_initialize()
 
 	if configOnly {
 		data, err = io.ReadAll(io.LimitReader(r, webpMaxHeaderSize))
@@ -184,7 +184,6 @@ func decode(r io.Reader, configOnly, decodeAll bool) (*WEBP, image.Config, error
 
 func encode(w io.Writer, m image.Image, quality, method int, lossless, exact bool) error {
 	mod := newModule()
-	mod.X_initialize()
 
 	var data []byte
 	var colorspace int
@@ -318,4 +317,95 @@ func (m *module) readUint64(ptr int32) (uint64, bool) {
 	}
 
 	return load64(m.memory[ptr:]), true
+}
+
+func newModule() *module {
+	mod := newModuleRaw(&wasiHost{})
+	mod.X_initialize()
+
+	return mod
+}
+
+// wasiHost satisfies the module's wasi imports; libwebpmux only writes diagnostics, discarded here.
+type wasiHost struct {
+	mod *module
+}
+
+func (h *wasiHost) Init(m any) {
+	h.mod = m.(*module)
+}
+
+func (h *wasiHost) Xfd_close(fd int32) int32 {
+	return 0
+}
+
+func (h *wasiHost) Xfd_write(fd, iovs, iovsLen, nwrittenPtr int32) int32 {
+	mem := h.mod.memory
+
+	var written uint32
+	for i := int32(0); i < iovsLen; i++ {
+		written += load32(mem[iovs+i*8+4:])
+	}
+
+	store32(mem[nwrittenPtr:], written)
+
+	return 0
+}
+
+// encodeAnimation encodes the frames (concatenated RGBA, frameSize each) into an animated WEBP.
+func encodeAnimation(frames []byte, width, height, count int, delays []int, loopCount, quality, method int, lossless, exact bool) ([]byte, error) {
+	mod := newModule()
+
+	framesPtr := mod.Xmalloc(int32(len(frames)))
+	defer mod.Xfree(framesPtr)
+	if !mod.write(framesPtr, frames) {
+		return nil, ErrMemWrite
+	}
+
+	delayBuf := make([]byte, count*4)
+	for i := 0; i < count; i++ {
+		binary.LittleEndian.PutUint32(delayBuf[i*4:], uint32(delays[i]))
+	}
+
+	delaysPtr := mod.Xmalloc(int32(len(delayBuf)))
+	defer mod.Xfree(delaysPtr)
+	if !mod.write(delaysPtr, delayBuf) {
+		return nil, ErrMemWrite
+	}
+
+	sizePtr := mod.Xmalloc(8)
+	defer mod.Xfree(sizePtr)
+
+	losslessVal := int32(0)
+	if lossless {
+		losslessVal = 1
+	}
+
+	exactVal := int32(0)
+	if exact {
+		exactVal = 1
+	}
+
+	outPtr := mod.Xencode_animation(framesPtr, int32(width), int32(height), int32(count), delaysPtr,
+		int32(loopCount), int32(quality), int32(method), losslessVal, exactVal, sizePtr)
+	defer mod.Xfree(outPtr)
+
+	size, ok := mod.readUint64(sizePtr)
+	if !ok {
+		return nil, ErrMemRead
+	}
+
+	if outPtr == 0 || size == 0 {
+		return nil, ErrEncode
+	}
+
+	out, ok := mod.read(outPtr, int32(size))
+	if !ok {
+		return nil, ErrMemRead
+	}
+
+	cp := make([]byte, len(out))
+	copy(cp, out)
+
+	return cp, nil
 }

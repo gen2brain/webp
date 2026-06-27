@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"fmt"
 	"image"
+	"image/color"
 	"image/jpeg"
 	"image/png"
 	"io"
@@ -453,4 +454,40 @@ func writeCloser(s ...string) (io.WriteCloser, error) {
 	}
 
 	return discardCloser, nil
+}
+
+func solidFrame(w, h int, c color.NRGBA) image.Image {
+	img := image.NewNRGBA(image.Rect(0, 0, w, h))
+	for i := 0; i < len(img.Pix); i += 4 {
+		img.Pix[i], img.Pix[i+1], img.Pix[i+2], img.Pix[i+3] = c.R, c.G, c.B, c.A
+	}
+	return img
+}
+
+func TestEncodeAll(t *testing.T) {
+	anim := &WEBP{
+		Image: []image.Image{
+			solidFrame(64, 48, color.NRGBA{255, 0, 0, 255}),
+			solidFrame(64, 48, color.NRGBA{0, 255, 0, 255}),
+			solidFrame(64, 48, color.NRGBA{0, 0, 255, 255}),
+		},
+		Delay:     []int{100, 200, 150},
+		LoopCount: 3,
+	}
+
+	var buf bytes.Buffer
+	if err := EncodeAll(&buf, anim, Options{Quality: 90, Method: 4}); err != nil {
+		t.Fatal("EncodeAll:", err)
+	}
+
+	dec, err := DecodeAll(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		t.Fatal("DecodeAll:", err)
+	}
+	if len(dec.Image) != 3 {
+		t.Fatalf("frame count = %d, want 3", len(dec.Image))
+	}
+	if dec.Image[0].Bounds().Dx() != 64 || dec.Image[0].Bounds().Dy() != 48 {
+		t.Errorf("frame size = %v, want 64x48", dec.Image[0].Bounds().Max)
+	}
 }

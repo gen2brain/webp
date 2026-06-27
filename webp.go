@@ -1,7 +1,7 @@
 // Package webp implements an WEBP image decoder based on libwebp compiled to WASM.
 package webp
 
-//go:generate wasm2go -pkg webp -unsafe -o libwebp.go lib/webp.wasm
+//go:generate make -C lib
 
 import (
 	"bytes"
@@ -32,6 +32,8 @@ type WEBP struct {
 	Image []image.Image
 	// Delay times, one per frame, in milliseconds.
 	Delay []int
+	// LoopCount is the number of times the animation repeats (0 = infinite).
+	LoopCount int
 }
 
 // DefaultQuality is the default quality encoding parameter.
@@ -166,6 +168,68 @@ func Encode(w io.Writer, m image.Image, o ...Options) error {
 	}
 
 	return nil
+}
+
+// EncodeAll writes the animation anim to w; all frames must share the same bounds.
+func EncodeAll(w io.Writer, anim *WEBP, o ...Options) error {
+	if anim == nil || len(anim.Image) == 0 {
+		return ErrEncode
+	}
+
+	lossless := false
+	quality := DefaultQuality
+	method := DefaultMethod
+	exact := false
+
+	if o != nil {
+		opt := o[0]
+		lossless = opt.Lossless
+		quality = opt.Quality
+		method = opt.Method
+		exact = opt.Exact
+
+		if quality <= 0 {
+			quality = DefaultQuality
+		} else if quality > 100 {
+			quality = 100
+		}
+
+		if method < 0 {
+			method = DefaultMethod
+		} else if method > 6 {
+			method = 6
+		}
+	}
+
+	b := anim.Image[0].Bounds()
+	width, height := b.Dx(), b.Dy()
+	frameSize := width * height * 4
+
+	frames := make([]byte, frameSize*len(anim.Image))
+	delays := make([]int, len(anim.Image))
+
+	for i, img := range anim.Image {
+		if img.Bounds().Dx() != width || img.Bounds().Dy() != height {
+			return ErrEncode
+		}
+
+		dst := image.NewNRGBA(image.Rect(0, 0, width, height))
+		draw.Draw(dst, dst.Bounds(), img, img.Bounds().Min, draw.Src)
+		copy(frames[i*frameSize:(i+1)*frameSize], dst.Pix)
+
+		if i < len(anim.Delay) {
+			delays[i] = anim.Delay[i]
+		}
+	}
+
+	data, err := encodeAnimation(frames, width, height, len(anim.Image), delays, anim.LoopCount, quality, method, lossless, exact)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(data)
+
+	return err
 }
 
 // Dynamic returns error (if there was any) during opening dynamic/shared library.
