@@ -16,10 +16,10 @@ type module struct {
 	memory                  []byte
 	maxMem                  int64
 	g0                      int32
-	_wasi_snapshot_preview1 Xwasi_snapshot_preview1
+	_wasi_snapshot_preview1 wasiSnapshotPreview1
 }
 
-func newModuleRaw(v0 Xwasi_snapshot_preview1) *module {
+func newModuleRaw(v0 wasiSnapshotPreview1) *module {
 	m := new(module)
 	m._wasi_snapshot_preview1 = v0
 	m.t0 = make([]any, 231)
@@ -39,7 +39,7 @@ func newModuleRaw(v0 Xwasi_snapshot_preview1) *module {
 	return m
 }
 
-type Xwasi_snapshot_preview1 = interface {
+type wasiSnapshotPreview1 = interface {
 	Xfd_close(v0 int32) int32
 	Xfd_write(v0, v1, v2, v3 int32) int32
 }

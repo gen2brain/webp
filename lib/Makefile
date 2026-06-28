@@ -17,7 +17,7 @@ wasm2go: ../libwebp.go
 
 ../libwebp.go: $(BIN)
 	wasm2go -pkg webp -unsafe -o ../libwebp.go $(BIN)
-	sed -i -E '/^const data[0-9]/! { s/\bModule\b/module/g; s/\bMemory\b/memory/g; s/\bNew\b/newModuleRaw/g; }' ../libwebp.go
+	sed -i -E '/^const data[0-9]/! { s/\bModule\b/module/g; s/\bMemory\b/memory/g; s/\bNew\b/newModuleRaw/g; s/\bXwasi_snapshot_preview1\b/wasiSnapshotPreview1/g; }' ../libwebp.go
 
 $(LIBWEBP_SRC):
 	git clone -b $(LIBWEBP_VERSION) --depth 1 --recursive --jobs `nproc` https://github.com/webmproject/libwebp
