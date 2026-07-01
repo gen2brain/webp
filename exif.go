@@ -112,6 +112,28 @@ func exifOrientation(data []byte) int {
 	return exif.Orientation
 }
 
+// orientTarget maps a source pixel to its destination for the given EXIF orientation.
+func orientTarget(orientation, sx, sy, sw, sh int) (int, int) {
+	switch orientation {
+	case 2: // flip horizontal
+		return sw - 1 - sx, sy
+	case 3: // rotate 180
+		return sw - 1 - sx, sh - 1 - sy
+	case 4: // flip vertical
+		return sx, sh - 1 - sy
+	case 5: // transpose
+		return sy, sx
+	case 6: // rotate 90 CW
+		return sh - 1 - sy, sx
+	case 7: // transverse
+		return sh - 1 - sy, sw - 1 - sx
+	case 8: // rotate 270 CW
+		return sy, sw - 1 - sx
+	}
+
+	return sx, sy
+}
+
 // applyOrientation returns img rotated/flipped per the EXIF orientation (unchanged for 1 or out of range).
 func applyOrientation(img image.Image, orientation int) image.Image {
 	if orientation <= 1 || orientation > 8 {
@@ -126,25 +148,24 @@ func applyOrientation(img image.Image, orientation int) image.Image {
 	}
 
 	dst := image.NewRGBA(image.Rect(0, 0, dw, dh))
+
+	if src, ok := img.(*image.RGBA); ok {
+		for sy := 0; sy < sh; sy++ {
+			srow := src.Pix[(b.Min.Y+sy)*src.Stride+b.Min.X*4:]
+			for sx := 0; sx < sw; sx++ {
+				dx, dy := orientTarget(orientation, sx, sy, sw, sh)
+				si := sx * 4
+				di := dy*dst.Stride + dx*4
+				copy(dst.Pix[di:di+4], srow[si:si+4])
+			}
+		}
+
+		return dst
+	}
+
 	for sy := 0; sy < sh; sy++ {
 		for sx := 0; sx < sw; sx++ {
-			var dx, dy int
-			switch orientation {
-			case 2: // flip horizontal
-				dx, dy = sw-1-sx, sy
-			case 3: // rotate 180
-				dx, dy = sw-1-sx, sh-1-sy
-			case 4: // flip vertical
-				dx, dy = sx, sh-1-sy
-			case 5: // transpose
-				dx, dy = sy, sx
-			case 6: // rotate 90 CW
-				dx, dy = sh-1-sy, sx
-			case 7: // transverse
-				dx, dy = sh-1-sy, sw-1-sx
-			case 8: // rotate 270 CW
-				dx, dy = sy, sw-1-sx
-			}
+			dx, dy := orientTarget(orientation, sx, sy, sw, sh)
 			dst.Set(dx, dy, img.At(b.Min.X+sx, b.Min.Y+sy))
 		}
 	}
