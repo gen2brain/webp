@@ -46,12 +46,7 @@ type Exif struct {
 
 // DecodeExif reads the EXIF metadata from a WEBP image. It returns ErrNoExif if the image carries no EXIF chunk.
 func DecodeExif(r io.Reader) (*Exif, error) {
-	data, err := io.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("webp: read: %w", err)
-	}
-
-	tiff := exifChunk(data)
+	tiff := exifChunkReader(r)
 	if tiff == nil {
 		return nil, ErrNoExif
 	}
@@ -62,6 +57,46 @@ func DecodeExif(r io.Reader) (*Exif, error) {
 	}
 
 	return exif, nil
+}
+
+// exifChunkReader streams the RIFF chunks, discarding chunk bodies until the EXIF payload is found.
+func exifChunkReader(r io.Reader) []byte {
+	var hdr [12]byte
+	if _, err := io.ReadFull(r, hdr[:]); err != nil {
+		return nil
+	}
+	if string(hdr[0:4]) != "RIFF" || string(hdr[8:12]) != "WEBP" {
+		return nil
+	}
+
+	var ch [8]byte
+	for {
+		if _, err := io.ReadFull(r, ch[:]); err != nil {
+			return nil
+		}
+
+		fourcc := string(ch[0:4])
+		size := int64(binary.LittleEndian.Uint32(ch[4:8]))
+
+		if fourcc == "EXIF" {
+			payload := make([]byte, size)
+			if _, err := io.ReadFull(r, payload); err != nil {
+				return nil
+			}
+			// Some encoders prefix the chunk with the JPEG-style "Exif\0\0" header.
+			if len(payload) >= 6 && string(payload[0:4]) == "Exif" && payload[4] == 0 && payload[5] == 0 {
+				payload = payload[6:]
+			}
+			return payload
+		}
+
+		if size%2 == 1 {
+			size++ // chunks are padded to an even size
+		}
+		if _, err := io.CopyN(io.Discard, r, size); err != nil {
+			return nil
+		}
+	}
 }
 
 // exifChunk returns the raw TIFF/EXIF payload of the WEBP "EXIF" RIFF chunk, or nil if absent.
